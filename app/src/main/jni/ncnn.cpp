@@ -215,52 +215,6 @@ Java_com_example_demoproject_1master_Ncnn_loadModel_1nanodet(JNIEnv *env,
 
     __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
 
-    const char *modeltypes[] =
-            {
-                    "m",
-                    "m-416",
-                    "g",
-                    "ELite0_320",
-                    "ELite1_416",
-                    "ELite2_512",
-                    "RepVGG-A0_416"
-            };
-
-    const int target_sizes[] =
-            {
-                    320,
-                    416,
-                    416,
-                    320,
-                    416,
-                    512,
-                    416
-            };
-
-    const float mean_vals[][3] =
-            {
-                    {103.53f, 116.28f, 123.675f},
-                    {103.53f, 116.28f, 123.675f},
-                    {103.53f, 116.28f, 123.675f},
-                    {127.f,   127.f,   127.f},
-                    {127.f,   127.f,   127.f},
-                    {127.f,   127.f,   127.f},
-                    {103.53f, 116.28f, 123.675f}
-            };
-
-    const float norm_vals[][3] =
-            {
-                    {1.f / 57.375f, 1.f / 57.12f, 1.f / 58.395f},
-                    {1.f / 57.375f, 1.f / 57.12f, 1.f / 58.395f},
-                    {1.f / 57.375f, 1.f / 57.12f, 1.f / 58.395f},
-                    {1.f / 128.f,   1.f / 128.f,  1.f / 128.f},
-                    {1.f / 128.f,   1.f / 128.f,  1.f / 128.f},
-                    {1.f / 128.f,   1.f / 128.f,  1.f / 128.f},
-                    {1.f / 57.375f, 1.f / 57.12f, 1.f / 58.395f}
-            };
-
-    const char *modeltype = modeltypes[(int) modelid];
-    int target_size = target_sizes[(int) modelid];
     bool use_gpu = (int) cpugpu == 1;
 
     // reload
@@ -274,8 +228,7 @@ Java_com_example_demoproject_1master_Ncnn_loadModel_1nanodet(JNIEnv *env,
         } else {
             if (!g_nanodet)
                 g_nanodet = new NanoDet;
-            g_nanodet->load(mgr, modeltype, target_size, mean_vals[(int) modelid],
-                            norm_vals[(int) modelid], use_gpu);
+            g_nanodet->load(mgr, use_gpu);
         }
     }
 
