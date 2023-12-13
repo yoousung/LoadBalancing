@@ -361,83 +361,37 @@ static void decode_mask(const std::vector<Object>& proposals, const std::vector<
     interp(mask_pred_result, 1.0, img_w, img_h, mask_pred_result);
 
 }
- 
-Yolo::Yolo()
+
+Yolov8::Yolov8()
 {
     blob_pool_allocator.set_size_compare_ratio(0.f);
     workspace_pool_allocator.set_size_compare_ratio(0.f);
 }
 
-int Yolo::load(const char* modeltype, int _target_size,  const float* _norm_vals, bool use_gpu)
+int Yolov8::load(AAssetManager* mgr, bool use_gpu)
 {
-    yolo.clear();
+    yolov8.clear();
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
 
     ncnn::set_cpu_powersave(2);
     ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
 
-    yolo.opt = ncnn::Option();
-
+    yolov8.opt = ncnn::Option();
 #if NCNN_VULKAN
-    yolo.opt.use_vulkan_compute = use_gpu;
+    yolov8.opt.use_vulkan_compute = use_gpu;
 #endif
-    
-    yolo.opt.num_threads = ncnn::get_big_cpu_count();
-    yolo.opt.blob_allocator = &blob_pool_allocator;
-    yolo.opt.workspace_allocator = &workspace_pool_allocator;
+    yolov8.opt.num_threads = ncnn::get_big_cpu_count();
+    yolov8.opt.blob_allocator = &blob_pool_allocator;
+    yolov8.opt.workspace_allocator = &workspace_pool_allocator;
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "%s.param", modeltype);
-    sprintf(modelpath, "%s.bin", modeltype);
-
-    yolo.load_param(parampath);
-    yolo.load_model(modelpath);
-
-    target_size = _target_size;
-    norm_vals[0] = _norm_vals[0];
-    norm_vals[1] = _norm_vals[1];
-    norm_vals[2] = _norm_vals[2];
+    yolov8.load_param(mgr, "yolov8_both.param");
+    yolov8.load_model(mgr, "yolov8_both.bin");
 
     return 0;
 }
 
-int Yolo::load(AAssetManager* mgr, const char* modeltype, int _target_size,  const float* _norm_vals, bool use_gpu)
-{
-    yolo.clear();
-    blob_pool_allocator.clear();
-    workspace_pool_allocator.clear();
-
-    ncnn::set_cpu_powersave(2);
-    ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
-
-    yolo.opt = ncnn::Option();
-#if NCNN_VULKAN
-    yolo.opt.use_vulkan_compute = use_gpu;
-#endif
-    yolo.opt.num_threads = ncnn::get_big_cpu_count();
-    yolo.opt.blob_allocator = &blob_pool_allocator;
-    yolo.opt.workspace_allocator = &workspace_pool_allocator;
-
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "%s.param", modeltype);
-    sprintf(modelpath, "%s.bin", modeltype);
-
-    yolo.load_param(mgr, parampath);
-    yolo.load_model(mgr, modelpath);
-
-
-    target_size = _target_size;
-    norm_vals[0] = _norm_vals[0];
-    norm_vals[1] = _norm_vals[1];
-    norm_vals[2] = _norm_vals[2];
-
-    return 0;
-}
-
-int Yolo::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold, float nms_threshold)
+int Yolov8::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold, float nms_threshold)
 {
     int img_w = rgb.cols;
     int img_h = rgb.rows;
@@ -462,15 +416,16 @@ int Yolo::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_th
     ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, img_w, img_h, w, h);
 
     // pad to target_size rectangle
-    // yolov5/utils/datasets.py letterbox
+    // yolov8/utils/datasets.py letterbox
     int wpad = (w + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - w;
     int hpad = (h + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - h;
     ncnn::Mat in_pad;
     ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 0.f);
 
+    const float norm_vals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
     in_pad.substract_mean_normalize(0, norm_vals);
 
-    ncnn::Extractor ex = yolo.create_extractor();
+    ncnn::Extractor ex = yolov8.create_extractor();
 
     ex.input("images", in_pad);
 
@@ -538,7 +493,7 @@ int Yolo::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_th
     return 0;
 }
 
-int Yolo::draw(cv::Mat& rgb, const std::vector<Object>& objects)
+int Yolov8::draw(cv::Mat& rgb, const std::vector<Object>& objects)
 {
     static const unsigned char colors[2][3] = {
             {56,  0, 255},
