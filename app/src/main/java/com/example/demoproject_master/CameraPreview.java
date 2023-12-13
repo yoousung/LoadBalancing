@@ -56,12 +56,12 @@ public class CameraPreview extends AppCompatActivity {
     };
 
     // TODO : 모델 선언부
-    // Model
+    // single
     // nanodet
 //    private NanoDetNcnn model = new NanoDetNcnn();
     // yolov8
 //    private Yolov8Ncnn model = new Yolov8Ncnn();
-    // total
+    // multi
     private Ncnn model = new Ncnn();
 
 
@@ -95,18 +95,14 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        // TODO : 모델 로드
+        // TODO : 모델 로드부
         // single
 //        model.loadModel(getAssets(), current_model, current_cpugpu);
 
-        // total
-        if (!model.loadModel_nanodet(getAssets(), current_model, current_cpugpu))
-            Log.e(TAG, "nanodet load failed");
-        Log.e(TAG, "nanodet load success");
-
-        if (!model.loadModel_yolov8(getAssets(), current_model, current_cpugpu))
-            Log.e(TAG, "yolov8 load failed");
-        Log.e(TAG, "yolov8 load success");
+        // multi
+        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
+            Log.e(TAG, "model load failed");
+        Log.e(TAG, "model load success");
     }
 
     public void setImageBitmap(Bitmap bitmap) {
@@ -164,13 +160,13 @@ public class CameraPreview extends AppCompatActivity {
                     });
                 }
             }
-            // TODO : 모델 동작 코드 추가
+            // TODO : 모델 추론부
             // single
 //            model.predict(bdbox, bitmap);
 
-            // total - (det, seg)
-            String input = "both";
-            model.predict(bdbox, bitmap, input);
+            // multi - (det, seg)
+            String opt = "both";
+            model.predict(bdbox, bitmap, opt);
         }
     };
 

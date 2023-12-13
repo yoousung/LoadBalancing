@@ -174,39 +174,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM * vm, void * reserved) {
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_loadModel_1yolov8(JNIEnv *env,
-                                                            jobject thiz,
-                                                            jobject assetManager,
-                                                            jint modelid,
-                                                            jint cpugpu) {
-    AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
-
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
-
-    bool use_gpu = (int) cpugpu == 1;
-
-// reload
-    {
-        ncnn::MutexLockGuard g(lock);
-
-        if (use_gpu /*&& ncnn::get_gpu_count()*/ == 0) {
-// no gpu
-            delete g_yolo;
-            g_yolo = 0;
-        } else {
-            if (!g_yolo)
-                g_yolo = new Yolov8;
-            g_yolo->load(mgr, use_gpu);
-        }
-    }
-
-    return JNI_TRUE;
-}
-
-JNIEXPORT jboolean
-
-JNICALL
-Java_com_example_demoproject_1master_Ncnn_loadModel_1nanodet(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
                                                              jobject thiz,
                                                              jobject assetManager,
                                                              jint modelid,
@@ -221,15 +189,12 @@ Java_com_example_demoproject_1master_Ncnn_loadModel_1nanodet(JNIEnv *env,
     {
         ncnn::MutexLockGuard g(lock);
 
-        if (use_gpu /*&& ncnn::get_gpu_count()*/ == 0) {
-            // no gpu
-            delete g_nanodet;
-            g_nanodet = 0;
-        } else {
-            if (!g_nanodet)
-                g_nanodet = new NanoDet;
+        if (!g_nanodet && !g_yolo){
+            g_yolo = new Yolov8;
+            g_nanodet = new NanoDet;
+            g_yolo->load(mgr, use_gpu);
             g_nanodet->load(mgr, use_gpu);
-        }
+            }
     }
 
     return JNI_TRUE;
