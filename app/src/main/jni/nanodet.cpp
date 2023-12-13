@@ -443,8 +443,6 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<Object>& objects)
         {139, 125,  96}
     };
 
-    int color_index = 0;
-
     for (size_t i = 0; i < objects.size(); i++)
     {
         const Object& obj = objects[i];
@@ -452,32 +450,34 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<Object>& objects)
 //         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
 //                 obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
 
-        const unsigned char* color = colors[color_index % 19];
-        color_index++;
+        if (obj.label == 0 || obj.label == 2 || obj.label == 5 || obj.label == 7 || obj.label == 9)
+        {
+            const unsigned char *color = colors[obj.label];
 
-        cv::Scalar cc(color[0], color[1], color[2]);
+            cv::Scalar cc(color[0], color[1], color[2]);
 
-        cv::rectangle(rgb, obj.rect, cc, 2);
+            cv::rectangle(rgb, obj.rect, cc, 2);
 
-        char text[256];
-        //sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
-        sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob);
+            char text[256];
+            //sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
+            sprintf(text, "%s", class_names[obj.label]);
 
-        int baseLine = 0;
-        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+            int baseLine = 0;
+            cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
 
-        int x = obj.rect.x;
-        int y = obj.rect.y - label_size.height - baseLine;
-        if (y < 0)
-            y = 0;
-        if (x + label_size.width > rgb.cols)
-            x = rgb.cols - label_size.width;
+            int x = obj.rect.x;
+            int y = obj.rect.y - label_size.height - baseLine;
+            if (y < 0)
+                y = 0;
+            if (x + label_size.width > rgb.cols)
+                x = rgb.cols - label_size.width;
 
-        cv::rectangle(rgb, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)), cc, -1);
+            cv::rectangle(rgb, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)), cc, -1);
 
-        cv::Scalar textcc = (color[0] + color[1] + color[2] >= 381) ? cv::Scalar(0, 0, 0) : cv::Scalar(255, 255, 255);
+            cv::Scalar textcc = (color[0] + color[1] + color[2] >= 381) ? cv::Scalar(0, 0, 0) : cv::Scalar(255, 255, 255);
 
-        cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, textcc, 1);
+            cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, textcc, 1);
+        }
     }
 
     return 0;
