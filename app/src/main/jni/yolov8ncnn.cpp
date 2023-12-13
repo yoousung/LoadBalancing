@@ -88,7 +88,7 @@ static int draw_fps(cv::Mat& rgb)
 }
 
 // 모델 3개 이용
-static Yolo* g_yolo = 0;
+static Yolov8* g_yolo = 0;
 static ncnn::Mutex lock;
 
 bool setBitmapFromMat(JNIEnv *pEnv, jobject pJobject, cv::Mat mat);
@@ -150,32 +150,10 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
 
 JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Yolov8Ncnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
 {
-    if (modelid < 0 || modelid > 6 || cpugpu < 0 || cpugpu > 1)
-    {
-        return JNI_FALSE;
-    }
-
     AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
 
     __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
 
-    const char* modeltypes[] =
-    {
-        "yolov8_both",
-    };
-
-    const int target_sizes[] =
-    {
-        320,
-    };
-
-    const float norm_vals[][3] =
-    {
-        {1 / 255.f, 1 / 255.f , 1 / 255.f},
-    };
-
-    const char* modeltype = modeltypes[(int)modelid];
-    int target_size = target_sizes[(int)modelid];
     bool use_gpu = (int)cpugpu == 1;
 
     // reload
@@ -191,8 +169,8 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Yolov8Ncnn_loadM
         else
         {
             if (!g_yolo)
-                g_yolo = new Yolo;
-            g_yolo->load(mgr, modeltype, target_size, norm_vals[(int)modelid], use_gpu);
+                g_yolo = new Yolov8;
+            g_yolo->load(mgr, use_gpu);
         }
     }
 

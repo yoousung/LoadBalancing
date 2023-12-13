@@ -5,7 +5,7 @@
 
 #include <net.h>
 
-struct Object
+struct Yolov8Object
 {
     cv::Rect_<float> rect;
     int label;
@@ -20,25 +20,22 @@ struct GridAndStride
     int grid1;
     int stride;
 };
-class Yolo
+class Yolov8
 {
 public:
-    Yolo();
+    Yolov8();
 
-    int load(const char* modeltype, int target_size,  const float* norm_vals, bool use_gpu = false);
+    int load(AAssetManager* mgr, bool use_gpu = false);
 
-    int load(AAssetManager* mgr, const char* modeltype, int target_size, const float* norm_vals, bool use_gpu = false);
+    int detect(const cv::Mat& rgb, std::vector<Yolov8Object>& objects, float prob_threshold = 0.35f, float nms_threshold = 0.45f);
 
-    int detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold = 0.35f, float nms_threshold = 0.45f);
-
-    int draw(cv::Mat& rgb, const std::vector<Object>& objects);
+    int draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects);
 
 private:
 
-    ncnn::Net yolo;
+    ncnn::Net yolov8;
 
-    int target_size;
-    float norm_vals[3];
+    int target_size=320;
 
     ncnn::UnlockedPoolAllocator blob_pool_allocator;
     ncnn::PoolAllocator workspace_pool_allocator;
