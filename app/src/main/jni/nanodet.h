@@ -31,9 +31,7 @@ class NanoDet
 public:
     NanoDet();
 
-    int load(const char* modeltype, int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false);
-
-    int load(AAssetManager* mgr, const char* modeltype, int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false);
+    int load(AAssetManager* mgr, bool use_gpu = false);
 
     int detect(const cv::Mat& rgb, std::vector<NanoDetObject>& objects, float prob_threshold = 0.4f, float nms_threshold = 0.5f);
 
@@ -41,9 +39,7 @@ public:
 
 private:
     ncnn::Net nanodet;
-    int target_size;
-    float mean_vals[3];
-    float norm_vals[3];
+    int target_size=320;
     ncnn::UnlockedPoolAllocator blob_pool_allocator;
     ncnn::PoolAllocator workspace_pool_allocator;
 };
