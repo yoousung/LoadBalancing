@@ -1,22 +1,17 @@
-
 #include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
-
 #include <android/log.h>
-
 #include <jni.h>
-
 #include <string>
 #include <vector>
-
 #include <platform.h>
 #include <benchmark.h>
-
-#include "nanodet.h"
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
+#include "nanodet.h"
+#include "yolov8.h"
 
 #if __ARM_NEON
 #include <arm_neon.h>
@@ -131,24 +126,8 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src){
     return bitmap;
 }
 
-
-std::vector<Object> createObjectsFromBoundingBoxString(const std::string& bboxString) {
-    std::vector<Object> objects;
-    std::istringstream iss(bboxString);
-    std::string token;
-
-    while (std::getline(iss, token, '/')) {
-        Object obj;
-        sscanf(token.c_str(), "%d,%f,%f,%f,%f,%f", &obj.label, &obj.prob, &obj.rect.x, &obj.rect.y, &obj.rect.width, &obj.rect.height);
-        objects.push_back(obj);
-    }
-
-    return objects;
-}
-
-
-
 static NanoDet* g_nanodet = 0;
+static Yolo* g_yolo = 0;
 static ncnn::Mutex lock;
 
 extern "C" {
@@ -169,15 +148,13 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
 
         delete g_nanodet;
         g_nanodet = 0;
+
+        delete g_yolo;
+        g_yolo = 0;
     }
 }
 
-// public native boolean loadModel(AssetManager mgr, int modelid, int cpugpu);
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_loadModel(JNIEnv* env,
-                                                                                      jobject thiz,
-                                                                                      jobject assetManager,
-                                                                                      jint modelid,
-                                                                                      jint cpugpu)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Ncnn_loadModel_1nanodet(JNIEnv* env,jobject thiz,jobject assetManager,jint modelid,jint cpugpu)
 {
     if (modelid < 0 || modelid > 6 || cpugpu < 0 || cpugpu > 1)
     {
@@ -257,10 +234,60 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_load
     return JNI_TRUE;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_predict(JNIEnv *env,
-                                                                                    jobject thiz,
-                                                                                    jobject imageView,
-                                                                                    jobject bitmap)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Ncnn_loadModel_1yolov8(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
+{
+    if (modelid < 0 || modelid > 6 || cpugpu < 0 || cpugpu > 1)
+    {
+        return JNI_FALSE;
+    }
+
+    AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
+
+    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
+
+    const char* modeltypes[] =
+            {
+                    "yolov8_both",
+            };
+
+    const int target_sizes[] =
+            {
+                    320,
+            };
+
+    const float norm_vals[][3] =
+            {
+                    {1 / 255.f, 1 / 255.f , 1 / 255.f},
+            };
+
+    const char* modeltype = modeltypes[(int)modelid];
+    int target_size = target_sizes[(int)modelid];
+    bool use_gpu = (int)cpugpu == 1;
+
+    // reload
+    {
+        ncnn::MutexLockGuard g(lock);
+
+        if (use_gpu == 0)
+        {
+            // no gpu
+            delete g_yolo;
+            g_yolo = 0;
+        }
+        else
+        {
+            if (!g_yolo)
+                g_yolo = new Yolo;
+            g_yolo->load(mgr, modeltype, target_size, norm_vals[(int)modelid], use_gpu);
+        }
+    }
+
+    return JNI_TRUE;
+}
+
+
+
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Ncnn_predict_1nanodet(JNIEnv *env,jobject thiz,jobject imageView,jobject bitmap)
 {
     // RGB형식으로 변경
     AndroidBitmapInfo info;
@@ -297,7 +324,7 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_pred
 
     if (g_nanodet)
     {
-        std::vector<Object> objects;
+        std::vector<Object_nanodet> objects;
         g_nanodet->detect(rgb, objects);
         g_nanodet->draw(rgb, objects);
 
@@ -315,31 +342,22 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_pred
     return JNI_TRUE;
 }
 
-
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_draw_1Bbox(JNIEnv *env,
-                                               jobject thiz,
-                                               jobject image_view,
-                                               jobject bitmap,
-                                               jstring data,
-                                               jstring data2) {
+JNIEXPORT jstring JNICALL Java_com_example_demoproject_1master_Ncnn_predict_1yolov8(JNIEnv *env, jobject thiz, jobject imageView, jobject bitmap) {
 
     // RGB형식으로 변경
     AndroidBitmapInfo info;
     if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        // Error handling
-        return JNI_FALSE;
+        return nullptr;
     }
 
     if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
-        return JNI_FALSE;
+        return nullptr;
     }
 
     // Get the pointer to bitmap pixels
     void* bitmapPixels;
     if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        // Error handling
-        return JNI_FALSE;
+        return nullptr;
     }
 
     // Create a cv::Mat from the bitmap data
@@ -349,46 +367,36 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_draw
     cv::Mat rgb;
     cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
 
-    jclass imageViewClass = env->GetObjectClass(image_view);
-    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap",
-                                                      "(Landroid/graphics/Bitmap;)V");
+    // 이미지 뷰 업데이트 JNI 호출
+    jclass imageViewClass = env->GetObjectClass(imageView);
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap", "(Landroid/graphics/Bitmap;)V");
 
     ncnn::MutexLockGuard g(lock);
 
-    if (g_nanodet)
-    {
+    // yolov8
+    if(g_yolo && g_nanodet){
+        std::vector<Object> objects;
+        std::vector<Object_nanodet> objects2;
 
-        const char* cstr = env->GetStringUTFChars(data, nullptr);
-        const char* cstr2 = env->GetStringUTFChars(data2, nullptr);
-        // 문자열을 Object로 반환
-        if (cstr != nullptr) {
-            std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
-            env->ReleaseStringUTFChars(data, cstr); // 메모리 릴리스
-
-            std::vector<Object> objects = createObjectsFromBoundingBoxString(cstr);
-            g_nanodet->draw(rgb, objects);
-        }
-
-
-
-        // BBox Data
-        if (cstr2 != nullptr) {
-            std::string bboxString(cstr2); // C 스타일 문자열을 C++의 std::string으로 복사
-            env->ReleaseStringUTFChars(data2, cstr2); // 메모리 릴리스
-
-            std::vector<Object> objects2 = createObjectsFromBoundingBoxString(cstr2);
-            g_nanodet->draw(rgb, objects2);
-        }
-
+        g_nanodet->detect(rgb, objects2);
+        g_yolo->detect(rgb, objects);
+        g_nanodet->draw(rgb, objects2);
+        g_yolo->draw(rgb, objects);
 
         draw_fps(rgb);
-        // 자바로 반환환
+
+        // 자바로 반환, imageView 나타내기
         jobject jbitmap = MatToBitmap(env, rgb);
-        env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
+        env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
+    }
+
+    else{
+        draw_unsupported(rgb);
     }
 
     AndroidBitmap_unlockPixels(env, bitmap);
-    return JNI_TRUE;
+
+    return nullptr;
 }
 }
 
