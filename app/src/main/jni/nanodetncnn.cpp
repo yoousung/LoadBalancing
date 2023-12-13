@@ -131,13 +131,13 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src){
 }
 
 
-std::vector<Object> createObjectsFromBoundingBoxString(const std::string& bboxString) {
-    std::vector<Object> objects;
+std::vector<NanoDetObject> createObjectsFromBoundingBoxString(const std::string& bboxString) {
+    std::vector<NanoDetObject> objects;
     std::istringstream iss(bboxString);
     std::string token;
 
     while (std::getline(iss, token, '/')) {
-        Object obj;
+        NanoDetObject obj;
         sscanf(token.c_str(), "%d,%f,%f,%f,%f,%f", &obj.label, &obj.prob, &obj.rect.x, &obj.rect.y, &obj.rect.width, &obj.rect.height);
         objects.push_back(obj);
     }
@@ -296,7 +296,7 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_pred
 
     if (g_nanodet)
     {
-        std::vector<Object> objects;
+        std::vector<NanoDetObject> objects;
         g_nanodet->detect(rgb, objects);
         g_nanodet->draw(rgb, objects);
 
@@ -364,7 +364,7 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_draw
             std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
             env->ReleaseStringUTFChars(data, cstr); // 메모리 릴리스
 
-            std::vector<Object> objects = createObjectsFromBoundingBoxString(cstr);
+            std::vector<NanoDetObject> objects = createObjectsFromBoundingBoxString(cstr);
             g_nanodet->draw(rgb, objects);
         }
 

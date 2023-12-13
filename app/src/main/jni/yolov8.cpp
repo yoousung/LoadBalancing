@@ -136,13 +136,13 @@ static void matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_bl
     delete op;
 }
 
-static inline float intersection_area(const Object& a, const Object& b)
+static inline float intersection_area(const Yolov8Object& a, const Yolov8Object& b)
 {
     cv::Rect_<float> inter = a.rect & b.rect;
     return inter.area();
 }
 
-static void qsort_descent_inplace(std::vector<Object>& faceobjects, int left, int right)
+static void qsort_descent_inplace(std::vector<Yolov8Object>& faceobjects, int left, int right)
 {
     int i = left;
     int j = right;
@@ -179,7 +179,7 @@ static void qsort_descent_inplace(std::vector<Object>& faceobjects, int left, in
     }
 }
 
-static void qsort_descent_inplace(std::vector<Object>& faceobjects)
+static void qsort_descent_inplace(std::vector<Yolov8Object>& faceobjects)
 {
     if (faceobjects.empty())
         return;
@@ -187,7 +187,7 @@ static void qsort_descent_inplace(std::vector<Object>& faceobjects)
     qsort_descent_inplace(faceobjects, 0, faceobjects.size() - 1);
 }
 
-static void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold)
+static void nms_sorted_bboxes(const std::vector<Yolov8Object>& faceobjects, std::vector<int>& picked, float nms_threshold)
 {
     picked.clear();
 
@@ -201,12 +201,12 @@ static void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vecto
 
     for (int i = 0; i < n; i++)
     {
-        const Object& a = faceobjects[i];
+        const Yolov8Object& a = faceobjects[i];
 
         int keep = 1;
         for (int j = 0; j < (int)picked.size(); j++)
         {
-            const Object& b = faceobjects[picked[j]];
+            const Yolov8Object& b = faceobjects[picked[j]];
 
             // intersection over union
             float inter_area = intersection_area(a, b);
@@ -239,7 +239,7 @@ static inline float sigmoid(float x)
 static void generate_proposals(std::vector<GridAndStride> grid_strides,
                                const ncnn::Mat& pred,
                                float prob_threshold,
-                               std::vector<Object>& objects)
+                               std::vector<Yolov8Object>& objects)
 {
     const int num_points = grid_strides.size();
     const int num_class = 2;
@@ -307,7 +307,7 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides,
             float x1 = pb_cx + pred_ltrb[2];
             float y1 = pb_cy + pred_ltrb[3];
 
-            Object obj;
+            Yolov8Object obj;
             obj.rect.x = x0;
             obj.rect.y = y0;
             obj.rect.width = x1 - x0;
@@ -340,7 +340,7 @@ static void generate_grids_and_stride(const int target_w, const int target_h, st
         }
     }
 }
-static void decode_mask(const std::vector<Object>& proposals, const std::vector<int>& picked, const int& img_w, const int& img_h,
+static void decode_mask(const std::vector<Yolov8Object>& proposals, const std::vector<int>& picked, const int& img_w, const int& img_h,
                         const ncnn::Mat& mask_proto, const ncnn::Mat& in_pad, const int& wpad, const int& hpad,
                         ncnn::Mat& mask_pred_result)
 {
@@ -391,7 +391,7 @@ int Yolov8::load(AAssetManager* mgr, bool use_gpu)
     return 0;
 }
 
-int Yolov8::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold, float nms_threshold)
+int Yolov8::detect(const cv::Mat& rgb, std::vector<Yolov8Object>& objects, float prob_threshold, float nms_threshold)
 {
     int img_w = rgb.cols;
     int img_h = rgb.rows;
@@ -439,8 +439,8 @@ int Yolov8::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_
     std::vector<GridAndStride> grid_strides;
     generate_grids_and_stride(in_pad.w, in_pad.h, strides, grid_strides);
 
-    std::vector<Object> proposals;
-    std::vector<Object> objects8;
+    std::vector<Yolov8Object> proposals;
+    std::vector<Yolov8Object> objects8;
     generate_proposals(grid_strides, out, prob_threshold, objects8);
 
     proposals.insert(proposals.end(), objects8.begin(), objects8.end());
@@ -493,7 +493,7 @@ int Yolov8::detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_
     return 0;
 }
 
-int Yolov8::draw(cv::Mat& rgb, const std::vector<Object>& objects)
+int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
 {
     static const unsigned char colors[2][3] = {
             {56,  0, 255},
@@ -501,7 +501,7 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Object>& objects)
     };
 
     for (int i = 0; i < objects.size(); i++) {
-        const Object& obj = objects[i];
+        const Yolov8Object& obj = objects[i];
         const unsigned char* color = colors[obj.label];
 
         cv::Scalar cc(color[0], color[1], color[2]);

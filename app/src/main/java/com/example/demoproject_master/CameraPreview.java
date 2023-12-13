@@ -1,46 +1,19 @@
 package com.example.demoproject_master;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
-import android.util.Range;
-import android.util.Size;
-import android.view.Surface;
 import android.view.TextureView;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -83,9 +56,15 @@ public class CameraPreview extends AppCompatActivity {
     };
 
     // TODO : 모델 선언부
-    private Yolov8Ncnn model = new Yolov8Ncnn();
-    
-    
+    // Model
+    // nanodet
+//    private NanoDetNcnn model = new NanoDetNcnn();
+    // yolov8
+//    private Yolov8Ncnn model = new Yolov8Ncnn();
+    // total
+    private Ncnn model = new Ncnn();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,12 +95,18 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        boolean ret_init = model.loadModel(getAssets(), current_model, current_cpugpu);
-        if (!ret_init)
-        {
-            Log.e(TAG, "nanodetncnn loadModel failed");
-        }
-        Log.e(TAG, "nanodetncnn loadModel success");
+        // TODO : 모델 로드
+        // single
+//        model.loadModel(getAssets(), current_model, current_cpugpu);
+
+        // total
+        if (!model.loadModel_nanodet(getAssets(), current_model, current_cpugpu))
+            Log.e(TAG, "nanodet load failed");
+        Log.e(TAG, "nanodet load success");
+
+        if (!model.loadModel_yolov8(getAssets(), current_model, current_cpugpu))
+            Log.e(TAG, "yolov8 load failed");
+        Log.e(TAG, "yolov8 load success");
     }
 
     public void setImageBitmap(Bitmap bitmap) {
@@ -180,8 +165,12 @@ public class CameraPreview extends AppCompatActivity {
                 }
             }
             // TODO : 모델 동작 코드 추가
-            // detection
-            //model.predict(bdbox, bitmap);
+            // single
+//            model.predict(bdbox, bitmap);
+
+            // total
+            model.predict_yolov8(bdbox, bitmap);
+            model.predict_nanodet(bdbox, bitmap);
         }
     };
 

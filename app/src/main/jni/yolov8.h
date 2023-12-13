@@ -5,7 +5,7 @@
 
 #include <net.h>
 
-struct Object
+struct Yolov8Object
 {
     cv::Rect_<float> rect;
     int label;
@@ -27,9 +27,9 @@ public:
 
     int load(AAssetManager* mgr, bool use_gpu = false);
 
-    int detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold = 0.35f, float nms_threshold = 0.45f);
+    int detect(const cv::Mat& rgb, std::vector<Yolov8Object>& objects, float prob_threshold = 0.35f, float nms_threshold = 0.45f);
 
-    int draw(cv::Mat& rgb, const std::vector<Object>& objects);
+    int draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects);
 
 private:
 
