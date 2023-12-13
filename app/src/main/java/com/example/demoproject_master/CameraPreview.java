@@ -168,9 +168,9 @@ public class CameraPreview extends AppCompatActivity {
             // single
 //            model.predict(bdbox, bitmap);
 
-            // total
-            model.predict_yolov8(bdbox, bitmap);
-            model.predict_nanodet(bdbox, bitmap);
+            // total - (det, seg)
+            String input = "both";
+            model.predict(bdbox, bitmap, input);
         }
     };
 
