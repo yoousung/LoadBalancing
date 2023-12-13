@@ -100,7 +100,9 @@ public class CameraPreview extends AppCompatActivity {
     // nanodet
 //    private NanoDetNcnn model = new NanoDetNcnn();
     // yolov5
-    private YoloDetNcnn model = new YoloDetNcnn();
+    //private YoloDetNcnn model = new YoloDetNcnn();
+    private Yolov8Ncnn model = new Yolov8Ncnn();
+
     private Spinner spinnerModel;
     private int current_model = 0;
     private int current_cpugpu = 1; // GPU사용
@@ -241,7 +243,7 @@ public class CameraPreview extends AppCompatActivity {
                 }
                 // BBox바꼈을 때
                 else {
-                    model.draw_Bbox(bdbox, bitmap, Bbox_data, Bbox_data); // 예측데이터 그리기
+                    //model.draw_Bbox(bdbox, bitmap, Bbox_data, Bbox_data); // 예측데이터 그리기
                     pre_Bbox_data = Bbox_data;
                 }
             }

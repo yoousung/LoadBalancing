@@ -14,8 +14,6 @@
 
 #include "yolov8.h"
 
-//#include "ndkcamera.h"
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -89,6 +87,10 @@ static int draw_fps(cv::Mat& rgb)
     return 0;
 }
 
+// 모델 3개 이용
+static Yolo* g_yolo = 0;
+static ncnn::Mutex lock;
+
 bool setBitmapFromMat(JNIEnv *pEnv, jobject pJobject, cv::Mat mat);
 
 jobject MatToBitmap(JNIEnv *env, cv::Mat src){
@@ -125,63 +127,13 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src){
     return bitmap;
 }
 
-
-std::vector<Object> createObjectsFromBoundingBoxString(const std::string& bboxString) {
-    std::vector<Object> objects;
-    std::istringstream iss(bboxString);
-    std::string token;
-
-    while (std::getline(iss, token, '/')) {
-        Object obj;
-        sscanf(token.c_str(), "%d,%f,%f,%f,%f,%f", &obj.label, &obj.prob, &obj.rect.x, &obj.rect.y, &obj.rect.width, &obj.rect.height);
-        objects.push_back(obj);
-    }
-
-    return objects;
-}
-
-static Yolo* g_yolo = 0;
-static ncnn::Mutex lock;
-
-//class MyNdkCamera : public NdkCameraWindow
-//{
-//public:
-//    virtual void on_image_render(cv::Mat& rgb) const;
-//};
-//
-//void MyNdkCamera::on_image_render(cv::Mat& rgb) const
-//{
-//    // nanodet
-//    {
-//        ncnn::MutexLockGuard g(lock);
-//
-//        if (g_yolo)
-//        {
-//            std::vector<Object> objects;
-//            g_yolo->detect(rgb, objects);
-//
-//            g_yolo->draw(rgb, objects);
-//        }
-//        else
-//        {
-//            draw_unsupported(rgb);
-//        }
-//    }
-//
-//    draw_fps(rgb);
-//}
-//
-//static MyNdkCamera* g_camera = 0;
-
 extern "C" {
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "JNI_OnLoad");
+__android_log_print(ANDROID_LOG_DEBUG, "ncnn", "JNI_OnLoad");
 
-//    g_camera = new MyNdkCamera;
-
-    return JNI_VERSION_1_4;
+return JNI_VERSION_1_4;
 }
 
 JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
@@ -194,13 +146,9 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
         delete g_yolo;
         g_yolo = 0;
     }
-
-//    delete g_camera;
-//    g_camera = 0;
 }
 
-// public native boolean loadModel(AssetManager mgr, int modelid, int cpugpu);
-JNIEXPORT jboolean JNICALL Java_com_tencent_ncnnyolo_NcnnYolo_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_Yolov8Ncnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
 {
     if (modelid < 0 || modelid > 6 || cpugpu < 0 || cpugpu > 1)
     {
@@ -251,39 +199,56 @@ JNIEXPORT jboolean JNICALL Java_com_tencent_ncnnyolo_NcnnYolo_loadModel(JNIEnv* 
     return JNI_TRUE;
 }
 
-// public native boolean openCamera(int facing);
-JNIEXPORT jboolean JNICALL Java_com_tencent_ncnnyolo_NcnnYolo_openCamera(JNIEnv* env, jobject thiz, jint facing)
-{
-    if (facing < 0 || facing > 1)
-        return JNI_FALSE;
+JNIEXPORT jstring JNICALL Java_com_example_demoproject_1master_Yolov8Ncnn_predict(JNIEnv *env, jobject thiz, jobject imageView, jobject bitmap) {
 
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "openCamera %d", facing);
+    // RGB형식으로 변경
+    AndroidBitmapInfo info;
+    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
+        return nullptr;
+    }
 
-//    g_camera->open((int)facing);
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        return nullptr;
+    }
 
-    return JNI_TRUE;
+    // Get the pointer to bitmap pixels
+    void* bitmapPixels;
+    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
+        return nullptr;
+    }
+
+    // Create a cv::Mat from the bitmap data
+    int width = info.width;
+    int height = info.height;
+    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
+    cv::Mat rgb;
+    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
+
+    //cv::resize(rgb,rgb,cv::Size(640,640));
+
+    // 이미지 뷰 업데이트 JNI 호출
+    jclass imageViewClass = env->GetObjectClass(imageView);
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap", "(Landroid/graphics/Bitmap;)V");
+
+    ncnn::MutexLockGuard g(lock);
+
+    // yolov8
+    if(g_yolo){
+        std::vector<Object> objects;
+        g_yolo->detect(rgb, objects);
+        g_yolo->draw(rgb, objects);
+
+        // 자바로 반환, imageView 나타내기
+        jobject jbitmap = MatToBitmap(env, rgb);
+        env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
+    }
+
+    else{
+        draw_unsupported(rgb);
+    }
+
+    AndroidBitmap_unlockPixels(env, bitmap);
+
+    return nullptr;
 }
-
-// public native boolean closeCamera();
-JNIEXPORT jboolean JNICALL Java_com_tencent_ncnnyolo_NcnnYolo_closeCamera(JNIEnv* env, jobject thiz)
-{
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "closeCamera");
-
-//    g_camera->close();
-
-    return JNI_TRUE;
-}
-
-// public native boolean setOutputWindow(Surface surface);
-JNIEXPORT jboolean JNICALL Java_com_tencent_ncnnyolo_NcnnYolo_setOutputWindow(JNIEnv* env, jobject thiz, jobject surface)
-{
-    ANativeWindow* win = ANativeWindow_fromSurface(env, surface);
-
-    __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "setOutputWindow %p", win);
-
-//    g_camera->set_window(win);
-
-    return JNI_TRUE;
-}
-
 }
