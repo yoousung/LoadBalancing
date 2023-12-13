@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DemoProject_Master</string>
     <string-array name="model_array">
-        <item>yolov5s</item>
+        <item>yolov8_both</item>
     </string-array>
     <string-array name="cpugpu_array">
         <item>CPU</item>

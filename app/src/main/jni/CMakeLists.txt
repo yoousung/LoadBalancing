@@ -13,12 +13,12 @@ find_package(OpenCV REQUIRED core imgproc)
 #target_link_libraries(nanodetncnn ncnn ${OpenCV_LIBS} mediandk)
 
 # segmentation - yolov8
-#add_library(ncnnyolov8 SHARED yolov8ncnn.cpp yolov8.cpp)
-#target_link_libraries(ncnnyolov8 ncnn ${OpenCV_LIBS} mediandk)
+add_library(ncnnyolov8 SHARED yolov8ncnn.cpp yolov8.cpp)
+target_link_libraries(ncnnyolov8 ncnn ${OpenCV_LIBS} mediandk)
 
 # detection - yolov5
-set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20201218-android/${ANDROID_ABI}/lib/cmake/ncnn)
-find_package(ncnn REQUIRED)
-
-add_library(ncnnyolov5 SHARED yolov5ncnn.cpp yolov5.cpp)
-target_link_libraries(ncnnyolov5 ncnn ${OpenCV_LIBS} mediandk jnigraphics)
+#set(ncnn_DIR${CMAKE_SOURCE_DIR}/ncnn-20201218-android/${ANDROID_ABI}/lib/cmake/ncnn)
+#find_package(ncnn REQUIRED)
+#
+#add_library(ncnnyolov5 SHARED yolov5ncnn.cpp yolov5.cpp)
+#target_link_libraries(ncnnyolov5 ncnn ${OpenCV_LIBS} mediandk jnigraphics)
