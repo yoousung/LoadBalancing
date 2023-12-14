@@ -180,6 +180,8 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_1master_NanoDetNcnn_load
 {
     AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
 
+    bool use_gpu = (int) cpugpu == 1;
+
     __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
 
     // reload
