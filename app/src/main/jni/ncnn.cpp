@@ -266,6 +266,8 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
                                                           "setImageBitmap",
                                                           "(Landroid/graphics/Bitmap;)V");
 
+        draw_fps(rgb);
+
 // 자바로 반환, imageView 나타내기
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
