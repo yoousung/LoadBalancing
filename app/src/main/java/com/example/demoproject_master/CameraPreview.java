@@ -165,7 +165,10 @@ public class CameraPreview extends AppCompatActivity {
 //            model.predict(bdbox, bitmap);
 
             // multi - (det, seg)
-            String opt = "both";
+            boolean[] opt = new boolean[3];
+            opt[0] = true;  // seg
+            opt[1] = true;  // det
+            opt[2] = false;  //
             model.predict(bdbox, bitmap, opt);
         }
     };
