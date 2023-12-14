@@ -8,7 +8,7 @@ nanodet
 yolov8-seg
 
 ### reference
-https://github.com/RangiLyu/nanodet
-https://github.com/ultralytics/ultralytics
-https://github.com/nihui/ncnn-android-nanodet
-https://github.com/FeiGeChuanShu/yolov5-seg-ncnn
+https://github.com/RangiLyu/nanodet  
+https://github.com/ultralytics/ultralytics  
+https://github.com/nihui/ncnn-android-nanodet  
+https://github.com/FeiGeChuanShu/yolov5-seg-ncnn  
