@@ -212,10 +212,11 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_1master_Yolov8Ncnn_predic
 
     // yolov8
     if(g_yolo){
-        std::vector<Object> objects;
+        std::vector<Yolov8Object> objects;
         g_yolo->detect(rgb, objects);
         g_yolo->draw(rgb, objects);
 
+        draw_fps(rgb);
         // 자바로 반환, imageView 나타내기
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
