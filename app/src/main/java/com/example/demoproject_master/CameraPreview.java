@@ -192,13 +192,25 @@ public class CameraPreview extends AppCompatActivity {
 
             Bitmap bitmap = cameraview.getBitmap();
 
-            // TODO: 모델 추론 부분 수정
+            // TODO: 모델 추론부
             boolean[] opt = new boolean[3];
             opt[0] = toggleSeg;
             opt[1] = toggleDet;
             opt[2] = false;
 
-            model.predict(bdbox, bitmap, opt);
+            Bbox_data = receiveDataTask.getBboxdata();
+            Log.e(TAG, "BBOX : "+Bbox_data);
+
+            if(Bbox_data!=null){
+                model.predict(bdbox, bitmap, opt);
+
+                Drawable drawable = bdbox.getDrawable();
+                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+
+                model.draw_Bbox(bdbox,newbitmap,Bbox_data);
+            } else {
+                model.predict(bdbox, bitmap, opt);
+            }
 
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastCaptureTime >= 200) {
