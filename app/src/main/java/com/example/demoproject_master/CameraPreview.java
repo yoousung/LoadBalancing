@@ -3,6 +3,8 @@ package com.example.demoproject_master;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -37,7 +39,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private Handler handler = new Handler();
     private boolean sendRunning = false;
-    private Runnable sendRunnable = new Runnable() {
+    private Runnable receiveRunnable = new Runnable() {
         @Override
         public void run() {
             for(int port_index = 0; port_index <2; port_index++){
@@ -54,6 +56,10 @@ public class CameraPreview extends AppCompatActivity {
             handler.postDelayed(this, 100); // 8fps로 데이터 수신
         }
     };
+    public static final int PORT[] = {13579, 2468}; // 결과값 송신을 위한 포트
+
+    private String state_connecting[] = {"off","off"};
+    private String Bbox_data = "";
 
     // TODO : 모델 선언부
     // single
@@ -155,7 +161,6 @@ public class CameraPreview extends AppCompatActivity {
                         @Override
                         public void run() {
                             SendDataTask.sendBitmapOverNetwork(bitmap, currentDeviceIndex);
-                            receiveDataTask.set_state(device1_state, device2_state);
                         }
                     });
                 }
@@ -165,18 +170,32 @@ public class CameraPreview extends AppCompatActivity {
 //            model.predict(bdbox, bitmap);
 
             // multi - (det, seg)
-            String opt = "both";
-            model.predict(bdbox, bitmap, opt);
+            String opt = "seg";
+            //model.predict(bdbox, bitmap, opt);
+
+            Bbox_data = receiveDataTask.getBboxdata();
+            Log.e(TAG, "BBOX : "+Bbox_data);
+
+            if(Bbox_data!=null){
+                model.predict(bdbox, bitmap, opt);
+
+                Drawable drawable = bdbox.getDrawable();
+                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+
+                model.draw_Bbox(bdbox,newbitmap,Bbox_data);
+            } else {
+                model.predict(bdbox, bitmap, opt);
+            }
         }
     };
 
     public void stopSendingResults() {
         sendRunning = false;
-        handler.removeCallbacks(sendRunnable);
+        handler.removeCallbacks(receiveRunnable);
     }
 
     public void startSendingResults() {
         sendRunning = true;
-        handler.post(sendRunnable);
+        handler.post(receiveRunnable);
     }
 }

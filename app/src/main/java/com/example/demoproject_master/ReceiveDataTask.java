@@ -74,4 +74,8 @@ public class ReceiveDataTask {
         textView1.setText(state_connecting[0]);
         textView2.setText(state_connecting[1]);
     }
+
+    public String getBboxdata(){
+        return Bbox_data;
+    }
 }
