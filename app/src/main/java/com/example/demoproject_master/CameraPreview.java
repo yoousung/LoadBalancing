@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.TextureView;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -34,8 +36,63 @@ public class CameraPreview extends AppCompatActivity {
     private ImageView bdbox;
     private TextView device1_state;
     private TextView device2_state;
+    private boolean toggleSeg = false;
+    private boolean toggleDet = false;
+    private boolean toggleThird = false;
 
     private Handler handler = new Handler();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_camera_preview);
+
+        // Seg Button 클릭 이벤트
+        Button toggleSegButton = findViewById(R.id.toggleSegButton);
+        updateButtonText(toggleSegButton, "Seg", toggleSeg);
+        toggleSegButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSeg = !toggleSeg; // 토글
+                toggleSegButton.setEnabled(true);
+
+                // 버튼 텍스트 변경
+                updateButtonText(toggleSegButton, "Seg", toggleSeg);
+
+                Log.d(TAG, "toggleSegButton clicked, isEnabled: " + toggleSegButton.isEnabled());
+            }
+        });
+
+        // Det button 클릭 이벤트
+        Button toggleDetButton = findViewById(R.id.toggleDetButton);
+        // 버튼 색상 및 글자색 변경
+        updateButtonText(toggleDetButton, "Det", toggleDet);
+        toggleDetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleDet = !toggleDet; // 토글
+                toggleDetButton.setEnabled(true);
+
+                // 버튼 텍스트 변경
+                updateButtonText(toggleDetButton, "Det", toggleDet);
+
+                Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
+            }
+        });
+
+        context = getApplicationContext();
+        initsetting();
+        sendDataTask.set_socket(ip_data);
+
+        reload();
+        startSendingResults();
+    }
+
+    private void updateButtonText(Button button, String label, boolean isToggleOn) {
+        String buttonText = label + ": " + (isToggleOn ? "ON" : "OFF");
+        button.setText(buttonText);
+    }
+
     private boolean sendRunning = false;
     private Runnable sendRunnable = new Runnable() {
         @Override
@@ -63,20 +120,6 @@ public class CameraPreview extends AppCompatActivity {
 //    private Yolov8Ncnn model = new Yolov8Ncnn();
     // multi
     private Ncnn model = new Ncnn();
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera_preview);
-
-        context = getApplicationContext();
-        initsetting();
-        sendDataTask.set_socket(ip_data);
-
-        reload();
-        startSendingResults();
-    }
 
     private void initsetting(){
         // Main에서 셋팅값 가져오기
@@ -131,23 +174,28 @@ public class CameraPreview extends AppCompatActivity {
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
             cameraSetting.openCamera();
         }
-
         @Override
         public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
         }
-
         @Override
         public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
             return false;
         }
-
         @Override
         public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
 
             Bitmap bitmap = cameraview.getBitmap();
 
+            // TODO: 모델 추론 부분 수정
+            boolean[] opt = new boolean[3];
+            opt[0] = toggleSeg;
+            opt[1] = toggleDet;
+            opt[2] = false;
+
+            model.predict(bdbox, bitmap, opt);
+
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastCaptureTime >= 200){
+            if (currentTime - lastCaptureTime >= 200) {
                 lastCaptureTime = currentTime;
                 for(int deviceIndex = 0; deviceIndex <2; deviceIndex++){
                     final int currentDeviceIndex = deviceIndex;
@@ -160,16 +208,6 @@ public class CameraPreview extends AppCompatActivity {
                     });
                 }
             }
-            // TODO : 모델 추론부
-            // single
-//            model.predict(bdbox, bitmap);
-
-            // multi - (det, seg)
-            boolean[] opt = new boolean[3];
-            opt[0] = true;  // seg
-            opt[1] = true;  // det
-            opt[2] = false;  //
-            model.predict(bdbox, bitmap, opt);
         }
     };
 
