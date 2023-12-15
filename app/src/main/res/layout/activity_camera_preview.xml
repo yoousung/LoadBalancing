@@ -16,16 +16,22 @@
             android:layout_marginBottom="10dp">
 
                 <Button
-                    android:id="@+id/add_button"
+                    android:id="@+id/toggleSegButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add"/>
+                    android:text="Seg"/>
 
                 <Button
-                    android:id="@+id/delete_button"
+                    android:id="@+id/toggleDetButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Delete"/>
+                    android:text="Det"/>
+
+                <Button
+                    android:id="@+id/toggleNoneButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="None"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"

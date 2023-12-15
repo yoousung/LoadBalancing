@@ -207,7 +207,7 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
                   jobject thiz,
                   jobject imageView,
                   jobject bitmap,
-                  jstring input) {
+                  jbooleanArray opt) {
 
 // RGB형식으로 변경
     AndroidBitmapInfo info;
@@ -235,27 +235,29 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
     ncnn::MutexLockGuard g(lock);
 
 // Prediction
-    const char *inputStr = env->GetStringUTFChars(input, 0);
+    jsize size = env->GetArrayLength(opt);
+    std::vector<uint8_t> option(size);
+    env->GetBooleanArrayRegion(opt, 0, size, reinterpret_cast<jboolean *>(&option[0]));
 
     if (g_yolo && g_nanodet) {
-        if (strcmp(inputStr, "det") == 0){
-            std::vector <NanoDetObject> objects;
-            g_nanodet->detect(rgb, objects);
-            g_nanodet->draw(rgb, objects);
-        }
-        else if (strcmp(inputStr, "seg") == 0){
-            std::vector <Yolov8Object> objects;
-            g_yolo->detect(rgb, objects);
-            g_yolo->draw(rgb, objects);
-        }
-        else{
-            std::vector <Yolov8Object> objects1;
+        if (option[0] && option[1]) {
+            std::vector<Yolov8Object> objects1;
             g_yolo->detect(rgb, objects1);
             g_yolo->draw(rgb, objects1);
 
-            std::vector <NanoDetObject> objects2;
+            std::vector<NanoDetObject> objects2;
             g_nanodet->detect(rgb, objects2);
             g_nanodet->draw(rgb, objects2);
+        } else if (option[0]) {
+            std::vector<Yolov8Object> objects;
+            g_yolo->detect(rgb, objects);
+            g_yolo->draw(rgb, objects);
+        } else if (option[1]) {
+            std::vector<NanoDetObject> objects;
+            g_nanodet->detect(rgb, objects);
+            g_nanodet->draw(rgb, objects);
+        } else {
+
         }
 
 // 이미지 뷰 업데이트 JNI 호출
@@ -263,6 +265,8 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
         jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
                                                           "setImageBitmap",
                                                           "(Landroid/graphics/Bitmap;)V");
+
+        draw_fps(rgb);
 
 // 자바로 반환, imageView 나타내기
         jobject jbitmap = MatToBitmap(env, rgb);
