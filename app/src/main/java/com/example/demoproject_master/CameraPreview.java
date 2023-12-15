@@ -3,6 +3,8 @@ package com.example.demoproject_master;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -94,7 +96,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private boolean sendRunning = false;
-    private Runnable sendRunnable = new Runnable() {
+    private Runnable receiveRunnable = new Runnable() {
         @Override
         public void run() {
             for(int port_index = 0; port_index <2; port_index++){
@@ -111,6 +113,10 @@ public class CameraPreview extends AppCompatActivity {
             handler.postDelayed(this, 100); // 8fps로 데이터 수신
         }
     };
+    public static final int PORT[] = {13579, 2468}; // 결과값 송신을 위한 포트
+
+    private String state_connecting[] = {"off","off"};
+    private String Bbox_data = "";
 
     // TODO : 모델 선언부
     // single
@@ -213,11 +219,11 @@ public class CameraPreview extends AppCompatActivity {
 
     public void stopSendingResults() {
         sendRunning = false;
-        handler.removeCallbacks(sendRunnable);
+        handler.removeCallbacks(receiveRunnable);
     }
 
     public void startSendingResults() {
         sendRunning = true;
-        handler.post(sendRunnable);
+        handler.post(receiveRunnable);
     }
 }

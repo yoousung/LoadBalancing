@@ -286,8 +286,9 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
              jobject thiz,
              jobject image_view,
              jobject bitmap,
-             jstring data,
-             jstring data2) {
+             jstring data) {
+
+
     // RGB형식으로 변경
     AndroidBitmapInfo info;
     if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
@@ -323,26 +324,15 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
     if (g_nanodet) {
 
         const char *cstr = env->GetStringUTFChars(data, nullptr);
-        const char *cstr2 = env->GetStringUTFChars(data2, nullptr);
+
         // 문자열을 Object로 반환
-        if (cstr != nullptr) {
+        if (cstr != nullptr && cstr != " ") {
             std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
             env->ReleaseStringUTFChars(data, cstr); // 메모리 릴리스
 
             std::vector <NanoDetObject> objects = createObjectsFromBoundingBoxString(cstr);
             g_nanodet->draw(rgb, objects);
         }
-
-        /*
-        // BBox Data
-        if (cstr2 != nullptr) {
-            std::string bboxString(cstr2); // C 스타일 문자열을 C++의 std::string으로 복사
-            env->ReleaseStringUTFChars(data2, cstr2); // 메모리 릴리스
-
-            std::vector<Object> objects2 = createObjectsFromBoundingBoxString(cstr2);
-            g_nanodet->draw(rgb, objects2);
-        }
-        */
 
         draw_fps(rgb);
         // 자바로 반환환

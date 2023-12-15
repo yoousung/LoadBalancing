@@ -10,10 +10,9 @@ public class Ncnn {
     public native boolean loadModel(AssetManager mgr, int modelid, int cpugpu);
     public native boolean predict(ImageView imageView, Bitmap bitmap,  boolean[] opt);
 
-//    public native boolean draw_Bbox(ImageView imageView,
-//                                Bitmap bitmap,
-//                                String data1,
-//                                String data2);
+    public native boolean draw_Bbox(ImageView imageView,
+                                Bitmap bitmap,
+                                String data);
 
     static {
         System.loadLibrary("ncnntotal");
