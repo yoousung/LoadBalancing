@@ -27,12 +27,11 @@ public class SendDataTask {
             @Override
             public void run() {
 
-                String stringValue = bboxdata;
                 try {
                     Socket clientSocket = new Socket(master_IP, PORT[port_index]);
                     BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
 
-                    byte[] byteArray = stringValue.getBytes();
+                    byte[] byteArray = bboxdata.getBytes();
 
                     outToServer.write(byteArray);
                     outToServer.flush();

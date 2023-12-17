@@ -1,16 +1,8 @@
 package com.example.demoproject;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
-import android.content.Context;
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.DhcpInfo;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,12 +12,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.List;
 
@@ -33,10 +24,12 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView; // 현재 상태 알 수 있는 텍스트 뷰
     // Device 선택 스위치
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switch1;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switch2;
 
-    private String master_IP = "192.168.43.1";
+    private final String master_IP = "192.168.43.1";
     private int port_index = 0; // 1 = Device1, 2 = Device2, 0 = 선택x
 
     @Override
@@ -57,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 검색 버튼 눌렀을 때
         scanButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
                 String ipList = getConnectedDevices();
