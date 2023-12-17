@@ -169,7 +169,6 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JN
     }
 
     return JNI_TRUE;
-    return JNI_TRUE;
 }
 
 // segmentaion 출력
@@ -208,7 +207,7 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_NanoDetNcnn_predict(JNIEn
     ncnn::MutexLockGuard g(lock);
 
     // 모델 두개
-    if (g_nanodet )
+    if (g_nanodet)
     {
         std::vector<NanoDetObject> objects;
         std::string result;

@@ -397,10 +397,8 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects)
 
 
     // 객체를 인식했을 경우
-    for (size_t i = 0; i < objects.size(); i++)
+    for (const auto & obj : objects)
     {
-        const NanoDetObject& obj = objects[i];
-
 //         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
 //                 obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
 
@@ -432,25 +430,11 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects)
 
             cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, textcc, 1);
 
-
             char data[24]; // 적절한 크기로 조정
             sprintf(data, "%d,%ld,%ld,%ld,%ld,%ld", obj.label, lround(obj.prob*100), lround(obj.rect.x), lround(obj.rect.y), lround(obj.rect.width), lround(obj.rect.height));
             bboxresult = data;
             //__android_log_print(ANDROID_LOG_ERROR, "nanodet", "BBOX : %s\n",bboxresult.c_str());
-
-            /*
-            // BBOX데이터 뽑아내기
-            if(i==0){
-                char data[24]; // 적절한 크기로 조정
-                sprintf(data, "%d,%ld,%ld,%ld,%ld,%ld", obj.label, lround(obj.prob*100), lround(obj.rect.x), lround(obj.rect.y), lround(obj.rect.width), lround(obj.rect.height));
-                bboxresult = data;
-            }
-            */
-
         }
-
-
-
     }
     return 0;
 }
