@@ -1,5 +1,6 @@
 package com.example.demoproject;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -36,7 +37,7 @@ public class CameraPreview extends AppCompatActivity {
     private Bitmap receiveBitmap;
     private final Object bitmapLock = new Object();
     private String bboxdata =" ";
-    private String pre_bboxdata = "";
+    private String pre_bboxdata = " ";
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
@@ -67,11 +68,6 @@ public class CameraPreview extends AppCompatActivity {
 
         initsetting();
 
-        // 수신부
-        receiveDataTaskTask = new ReceiveDataTask(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS);
-        receiveDataTaskTask.setDataReceivedCallback(callback);
-        receiveDataTaskTask.startReceiving();
-
         startSendingResults();
         ConnectServer();
         reload();
@@ -101,32 +97,27 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    public void onBackPressed() {
         send_disconnect(port_index);
-        DisconnectServer();
-        handler.removeCallbacksAndMessages(null);
+        stopSendingResults();
+        receiveDataTaskTask.stopReceiving();
+
+        Intent intent = new Intent(CameraPreview.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+
+        super.onBackPressed();
+        finish();
     }
 
-    // 카메라 프리뷰 재시작 했을 때
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (receiveDataTaskTask == null /*|| receiveTask.getStatus() != AsyncTask.Status.RUNNING*/) {
-            send_connect(port_index);
-            ConnectServer();
-        }
-    }
-
-    // 카메라 프리뷰 파괴되었을 때
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
         send_disconnect(port_index);
-        executorService.shutdown();
         stopSendingResults();
-        DisconnectServer();
+
+        executorService.shutdown();
         handler.removeCallbacksAndMessages(null);
     }
 
@@ -158,7 +149,7 @@ public class CameraPreview extends AppCompatActivity {
     private void DisconnectServer(){
         receiveDataTaskTask.stopReceiving();
     }
-    
+
     private void ConnectServer(){
         receiveDataTaskTask = new ReceiveDataTask(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS);
         receiveDataTaskTask.setDataReceivedCallback(callback);

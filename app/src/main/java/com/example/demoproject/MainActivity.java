@@ -31,13 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final String master_IP = "192.168.43.1";
     private int port_index = 0; // 1 = Device1, 2 = Device2, 0 = 선택x
+    private CameraPreview cameraPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Tedpermission 권한 설정
+        cameraPreview = new CameraPreview();
         setPermission();
 
         // 검색, 전송 버튼 설정
@@ -163,6 +163,12 @@ public class MainActivity extends AppCompatActivity {
 
     // CameraPreview 시작
     private void startCameraPreview(int port_index) {
+
+        if (cameraPreview != null) {
+            cameraPreview.finish();  // Finish the current instance
+            cameraPreview = null;    // Set the reference to null
+        }
+
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
         intent.putExtra("port_index_key", port_index);
         startActivity(intent);
