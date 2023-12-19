@@ -203,7 +203,7 @@ Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_homoGen(JNIEnv *env,
                   jobject thiz,
                   jobject imageView,
                   jobject bitmap,
@@ -282,7 +282,7 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
              jobject thiz,
              jobject image_view,
              jobject bitmap,
