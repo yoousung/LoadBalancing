@@ -2,6 +2,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <utility>
 
 #include "cpu.h"
 
@@ -386,22 +387,16 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects)
         {139, 125,  96}
     };
 
-
+    std::string bboxes = " ";
     // 객체 인식이 없을 경우
-    if(objects.size() == 0)
-    {
-        bboxresult = " ";
-        //__android_log_print(ANDROID_LOG_ERROR, "nanodet", "BBOX : %s\n",bboxresult.c_str());
+    if(objects.empty()) {
+        set_bbox(bboxes);
         return 0;
     }
-
 
     // 객체를 인식했을 경우
     for (const auto & obj : objects)
     {
-//         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
-//                 obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
-
         if (obj.label == 0 || obj.label == 2 || obj.label == 5 || obj.label == 7 || obj.label == 9)
         {
             const unsigned char *color = colors[obj.label];
@@ -411,7 +406,6 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects)
             cv::rectangle(rgb, obj.rect, cc, 2);
 
             char text[256];
-            //sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
             sprintf(text, "%s", class_names[obj.label]);
 
             int baseLine = 0;
@@ -431,14 +425,26 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects)
             cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, textcc, 1);
 
             char data[24]; // 적절한 크기로 조정
-            sprintf(data, "%d,%ld,%ld,%ld,%ld,%ld", obj.label, lround(obj.prob*100), lround(obj.rect.x), lround(obj.rect.y), lround(obj.rect.width), lround(obj.rect.height));
-            bboxresult = data;
-            //__android_log_print(ANDROID_LOG_ERROR, "nanodet", "BBOX : %s\n",bboxresult.c_str());
+            sprintf(data, "%d %ld %ld %ld %ld %ld/",
+                    obj.label,
+                    lround(obj.prob*100),
+                    lround(obj.rect.x),
+                    lround(obj.rect.y),
+                    lround(obj.rect.width),
+                    lround(obj.rect.height));
+            bboxes.append(data);
         }
     }
+//    __android_log_print(ANDROID_LOG_ERROR, "nanodet_send", "BBOX : %s\n",bboxes.c_str());
+    set_bbox(bboxes);
+
     return 0;
 }
 
-std::string NanoDet::bboxdata(){
+void NanoDet::set_bbox(std::string& bboxes) {
+    bboxresult = bboxes;
+}
+
+std::string NanoDet::get_bbox(){
     return bboxresult;
 }

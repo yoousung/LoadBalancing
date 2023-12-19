@@ -37,7 +37,9 @@ public:
 
     int draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects);
 
-    std::string bboxdata();
+    void set_bbox(std::string& bboxes);
+
+    std::string get_bbox();
 
 private:
     ncnn::Net nanodet;

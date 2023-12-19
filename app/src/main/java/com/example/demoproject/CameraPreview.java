@@ -37,7 +37,6 @@ public class CameraPreview extends AppCompatActivity {
     private Bitmap receiveBitmap;
     private final Object bitmapLock = new Object();
     private String bboxdata =" ";
-    private String pre_bboxdata = " ";
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
