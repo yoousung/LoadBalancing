@@ -216,7 +216,7 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_NanoDetNcnn_predict(JNIEn
         g_nanodet->draw(rgb, objects);
 
         // BBox데이터 뽑아내기
-        result = g_nanodet->bboxdata();
+        result = g_nanodet->get_bbox();
         jstring jResult = env->NewStringUTF(result.c_str());
 
         //draw_fps(rgb);
