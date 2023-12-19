@@ -180,6 +180,16 @@ public class CameraSetting {
             Log.e(TAG, "카메라를 여는 데 문제가 발생했습니다: " + e.getMessage());
             e.printStackTrace();
         }
-
+    }
+    public void closeCamera() {
+        if (cameraDevice != null) {
+            cameraDevice.close();
+            cameraDevice = null;
+        }
+        if (previewSession != null) {
+            previewSession.close();
+            previewSession = null;
+        }
+        outputSurfaces.clear();
     }
 }

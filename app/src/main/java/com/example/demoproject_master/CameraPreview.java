@@ -1,6 +1,7 @@
 package com.example.demoproject_master;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
@@ -90,6 +91,21 @@ public class CameraPreview extends AppCompatActivity {
         startSendingResults();
     }
 
+    @Override
+    public void onBackPressed() {
+        stopSendingResults();
+
+        bdbox.setImageBitmap(null);
+        cameraSetting.closeCamera();
+
+        Intent intent = new Intent(CameraPreview.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+
+        super.onBackPressed();
+        finish();
+    }
+
     private void updateButtonText(Button button, String label, boolean isToggleOn) {
         String buttonText = label + ": " + (isToggleOn ? "ON" : "OFF");
         button.setText(buttonText);
@@ -119,12 +135,13 @@ public class CameraPreview extends AppCompatActivity {
     private String Bbox_data = "";
 
     // TODO : 모델 선언부
-    // single
+    // 1) single
     // nanodet
-//    private NanoDetNcnn model = new NanoDetNcnn();
+    // private NanoDetNcnn model = new NanoDetNcnn();
     // yolov8
-//    private Yolov8Ncnn model = new Yolov8Ncnn();
-    // multi
+    // private Yolov8Ncnn model = new Yolov8Ncnn();
+
+    // 2) multi
     private Ncnn model = new Ncnn();
 
     private void initsetting(){
@@ -170,6 +187,14 @@ public class CameraPreview extends AppCompatActivity {
 
     @Override
     protected void onDestroy(){
+        bdbox.setImageBitmap(null);
+        cameraSetting.closeCamera();
+
+        stopSendingResults();
+        executorService.shutdown();
+
+        handler.removeCallbacksAndMessages(null);
+
         super.onDestroy();
         executorService.shutdown();
         stopSendingResults();
@@ -201,26 +226,38 @@ public class CameraPreview extends AppCompatActivity {
             Bbox_data = receiveDataTask.getBboxdata();
             Log.e(TAG, "BBOX : "+Bbox_data);
 
-            if(Bbox_data!=null){
-                model.predict(bdbox, bitmap, opt);
+            device1_state.getText();
+            device2_state.getText();
 
-                Drawable drawable = bdbox.getDrawable();
-                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
-
-                model.draw_Bbox(bdbox,newbitmap,Bbox_data);
-            } else {
+            // 1) device가 모두 꺼져있을 때
+            if(device1_state.getText().equals("off")&&device1_state.getText().equals("off")){
                 model.predict(bdbox, bitmap, opt);
+            }
+            // 2) device가 모두 연결되어 있을 때
+            else{
+                if(Bbox_data!=null){
+                    model.predict(bdbox, bitmap, opt);
+
+                    Drawable drawable = bdbox.getDrawable();
+                    Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+
+                    bdbox.setImageBitmap(null);
+
+                    model.draw_Bbox(bdbox,newbitmap,Bbox_data);
+                } else {
+                    model.predict(bdbox, bitmap, opt);
+                }
             }
 
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastCaptureTime >= 200) {
+            if (currentTime - lastCaptureTime >= 100) {
                 lastCaptureTime = currentTime;
                 for(int deviceIndex = 0; deviceIndex <2; deviceIndex++){
                     final int currentDeviceIndex = deviceIndex;
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            SendDataTask.sendBitmapOverNetwork(bitmap, currentDeviceIndex);
+                            sendDataTask.sendBitmapOverNetwork(bitmap, currentDeviceIndex);
                             receiveDataTask.set_state(device1_state, device2_state);
                         }
                     });

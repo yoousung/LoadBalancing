@@ -41,12 +41,12 @@ public class MainActivity extends AppCompatActivity {
     private boolean device2_state; // Device2 선택 판정
     private int case_index;
     private String ip_data;
-
+    private CameraPreview cameraPreview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        cameraPreview = new CameraPreview();
         setPermission();
         initViews();
 
@@ -139,6 +139,13 @@ public class MainActivity extends AppCompatActivity {
 
     // 카메라 프리뷰 시작
     private void start_CameraPreview(int case_index){
+        // Stop any existing camera preview if needed
+        if (cameraPreview != null) {
+            cameraPreview.stopSendingResults();
+            cameraPreview.finish();  // Finish the current instance
+            cameraPreview = null;    // Set the reference to null
+        }
+
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
         intent.putExtra("case_index", case_index);
         startActivity(intent);
