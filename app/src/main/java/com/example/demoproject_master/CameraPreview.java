@@ -24,12 +24,11 @@ import java.util.concurrent.Executors;
 
 public class CameraPreview extends AppCompatActivity {
 
-    private String TAG = "CameraPreviewTask";
+    private final String TAG = "CameraPreviewTask";
     private TextureView cameraview;
-    private Context context;
     private CameraSetting cameraSetting; // class
-    private SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
-    private ReceiveDataTask receiveDataTask = new ReceiveDataTask(CameraPreview.this);
+    private final SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
+    private final ReceiveDataTask receiveDataTask = new ReceiveDataTask(CameraPreview.this);
     private long lastCaptureTime;
     private ExecutorService executorService;
     private int current_model = 0;
@@ -79,11 +78,11 @@ public class CameraPreview extends AppCompatActivity {
                 // 버튼 텍스트 변경
                 updateButtonText(toggleDetButton, "Det", toggleDet);
 
-                Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
+                Log.d(TAG, "toggleDetButton clicked, isEnabled: " + toggleDetButton.isEnabled());
             }
         });
 
-        context = getApplicationContext();
+        Context context = getApplicationContext();
         initsetting();
         sendDataTask.set_socket(ip_data);
 
@@ -115,7 +114,7 @@ public class CameraPreview extends AppCompatActivity {
     private Runnable receiveRunnable = new Runnable() {
         @Override
         public void run() {
-            for(int port_index = 0; port_index <2; port_index++){
+            for (int port_index = 0; port_index < 2; port_index++) {
                 final int currentPortIndex = port_index;
                 executorService.submit(new Runnable() {
                     @Override
@@ -129,9 +128,9 @@ public class CameraPreview extends AppCompatActivity {
             handler.postDelayed(this, 100); // 8fps로 데이터 수신
         }
     };
-    public static final int PORT[] = {13579, 2468}; // 결과값 송신을 위한 포트
+    public static final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
 
-    private String state_connecting[] = {"off","off"};
+    private final String[] state_connecting = {"off", "off"};
     private String Bbox_data = "";
 
     // TODO : 모델 선언부
@@ -144,9 +143,9 @@ public class CameraPreview extends AppCompatActivity {
     // 2) multi
     private Ncnn model = new Ncnn();
 
-    private void initsetting(){
+    private void initsetting() {
         // Main에서 셋팅값 가져오기
-        case_index = getIntent().getIntExtra("case_index",-1);
+        case_index = getIntent().getIntExtra("case_index", -1);
         ip_data = getIntent().getStringExtra("ip_data");
         // 스레드 풀 초기화
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -157,7 +156,7 @@ public class CameraPreview extends AppCompatActivity {
         cameraview = findViewById(R.id.camera_view);
         cameraview.setSurfaceTextureListener(textureListener);
         bdbox = findViewById(R.id.bdbox_imageview);
-        cameraSetting = new CameraSetting(CameraPreview.this,cameraview);
+        cameraSetting = new CameraSetting(CameraPreview.this, cameraview);
     }
 
     private void reload() {
@@ -186,7 +185,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         bdbox.setImageBitmap(null);
         cameraSetting.closeCamera();
 
@@ -205,13 +204,16 @@ public class CameraPreview extends AppCompatActivity {
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
             cameraSetting.openCamera();
         }
+
         @Override
         public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
         }
+
         @Override
         public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
             return false;
         }
+
         @Override
         public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
 
@@ -224,35 +226,32 @@ public class CameraPreview extends AppCompatActivity {
             opt[2] = false;
 
             Bbox_data = receiveDataTask.getBboxdata();
-            Log.e(TAG, "BBOX : "+Bbox_data);
+            Log.e(TAG, "BBOX : " + Bbox_data);
 
-            device1_state.getText();
-            device2_state.getText();
-
-            // 1) device가 모두 꺼져있을 때
-            if(device1_state.getText().equals("off")&&device1_state.getText().equals("off")){
-                model.predict(bdbox, bitmap, opt);
+            // 1) device1 & device2 OFF
+            if (device1_state.getText().equals("off") && device2_state.getText().equals("off")) {
+                model.homoGen(bdbox, bitmap, opt);
             }
-            // 2) device가 모두 연결되어 있을 때
-            else{
-                if(Bbox_data!=null){
-                    model.predict(bdbox, bitmap, opt);
+            // 2) device1 ON
+            else {
+                if (Bbox_data != null) {
+                    model.homoGen(bdbox, bitmap, opt);
 
                     Drawable drawable = bdbox.getDrawable();
                     Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
 
                     bdbox.setImageBitmap(null);
 
-                    model.draw_Bbox(bdbox,newbitmap,Bbox_data);
+                    model.heteroGen(bdbox, newbitmap, Bbox_data);
                 } else {
-                    model.predict(bdbox, bitmap, opt);
+                    model.homoGen(bdbox, bitmap, opt);
                 }
             }
 
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastCaptureTime >= 100) {
                 lastCaptureTime = currentTime;
-                for(int deviceIndex = 0; deviceIndex <2; deviceIndex++){
+                for (int deviceIndex = 0; deviceIndex < 2; deviceIndex++) {
                     final int currentDeviceIndex = deviceIndex;
                     executorService.submit(new Runnable() {
                         @Override

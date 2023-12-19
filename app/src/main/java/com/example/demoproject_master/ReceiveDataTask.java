@@ -1,4 +1,5 @@
 package com.example.demoproject_master;
+
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
@@ -15,15 +16,14 @@ public class ReceiveDataTask {
     private Context context;
     private String TAG = "ReceiveTask";
     public static final int PORT[] = {13579, 2468}; // 결과값 리턴을 위한 포트 넘버
-    private String state_connecting[] = {"off","off"};
+    private String state_connecting[] = {"off", "off"};
     private String Bbox_data;
-    private String pre_Bbox_data = "";
 
     public ReceiveDataTask(Context context) {
         this.context = context;
     }
 
-    public void receive_state(int port_index){
+    public void receive_state(int port_index) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -51,13 +51,15 @@ public class ReceiveDataTask {
                         // 양측에서 받아오는 BBOX데이터
                         Bbox_data = receivedText;
 
-                        Log.e(TAG, "Receive : "+Bbox_data);
+                        Log.e(TAG, "Receive : " + Bbox_data);
 
                         // 핸드폰 연결 확인
-                        if(receivedText.equals("off")) {
+                        if (receivedText.equals("off")) {
                             state_connecting[port_index] = "off";
-                            Log.e(TAG, "State : "+state_connecting[port_index]);
-                        } else {state_connecting[port_index] = "on";}
+                            Log.e(TAG, "State : " + state_connecting[port_index]);
+                        } else {
+                            state_connecting[port_index] = "on";
+                        }
 
                     } else {
                         Log.e(TAG, "Received data is null.");
@@ -70,12 +72,12 @@ public class ReceiveDataTask {
         }).start();
     }
 
-    public void set_state(TextView textView1, TextView textView2){
+    public void set_state(TextView textView1, TextView textView2) {
         textView1.setText(state_connecting[0]);
         textView2.setText(state_connecting[1]);
     }
 
-    public String getBboxdata(){
+    public String getBboxdata() {
         return Bbox_data;
     }
 }

@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static android.content.Context.CAMERA_SERVICE;
 
@@ -78,12 +79,12 @@ public class CameraSetting {
             }
 
             // 카메라 노츨 및 프레임 속도 설정
-            Range<Integer> fps[] = characteristic.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
-            for (int i = 0; i < fps.length; i++) {
+            Range<Integer>[] fps = characteristic.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+            for (int i = 0; i < Objects.requireNonNull(fps).length; i++) {
                 Range<Integer> FPS = fps[i];
                 Log.e(TAG, (i + 1) + "th fps : " + FPS);
             }
-            Range<Integer> fpsForVideo[] = map.getHighSpeedVideoFpsRanges();
+            Range<Integer>[] fpsForVideo = map.getHighSpeedVideoFpsRanges();
             for (int i = 0; i < fpsForVideo.length; i++) {
                 Range<Integer> FPSFORVIDEO = fpsForVideo[i];
                 Log.d(TAG, (i + 1) + "th fpsForVideo : " + FPSFORVIDEO);

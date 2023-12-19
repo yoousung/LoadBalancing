@@ -130,21 +130,6 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src) {
     return bitmap;
 }
 
-std::vector <NanoDetObject> createObjectsFromBoundingBoxString(const std::string &bboxString) {
-    std::vector <NanoDetObject> objects;
-    std::istringstream iss(bboxString);
-    std::string token;
-
-    while (std::getline(iss, token, '/')) {
-        NanoDetObject obj;
-        sscanf(token.c_str(), "%d,%f,%f,%f,%f,%f", &obj.label, &obj.prob, &obj.rect.x, &obj.rect.y,
-               &obj.rect.width, &obj.rect.height);
-        objects.push_back(obj);
-    }
-
-    return objects;
-}
-
 static NanoDet *g_nanodet = 0;
 static Yolov8 *g_yolo = 0;
 static ncnn::Mutex lock;
@@ -203,7 +188,7 @@ Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_homoGen(JNIEnv *env,
                   jobject thiz,
                   jobject imageView,
                   jobject bitmap,
@@ -282,7 +267,7 @@ Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
              jobject thiz,
              jobject image_view,
              jobject bitmap,
@@ -330,8 +315,24 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
             std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
             env->ReleaseStringUTFChars(data, cstr); // 메모리 릴리스
 
-            std::vector <NanoDetObject> objects = createObjectsFromBoundingBoxString(cstr);
+            std::vector<NanoDetObject> objects;
+            std::istringstream iss(bboxString);
+            __android_log_print(ANDROID_LOG_ERROR, "nanodet_receive", "BBOXS : %s\n",bboxString.c_str());
+            std::string token;
+            while (std::getline(iss, token, '/')) {
+                NanoDetObject obj;
+                sscanf(token.c_str(), "%d %f %f %f %f %f",
+                       &obj.label,
+                       &obj.prob,
+                       &obj.rect.x,
+                       &obj.rect.y,
+                       &obj.rect.width,
+                       &obj.rect.height);
+
+                objects.push_back(obj);
+            }
             g_nanodet->draw(rgb, objects);
+            objects.clear();
         }
 
         draw_fps(rgb);
