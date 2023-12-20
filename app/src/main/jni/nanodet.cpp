@@ -205,7 +205,18 @@ int NanoDet::load(AAssetManager* mgr, bool use_gpu)
     ncnn::set_cpu_powersave(2);
     ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
 
-    nanodet.opt = ncnn::Option();
+    if (use_gpu)
+    {
+        // GPU 사용 설정
+        nanodet.opt = ncnn::Option();
+    }
+    else
+    {
+        // CPU 사용 설정
+        nanodet.opt = ncnn::Option();
+        nanodet.opt.use_vulkan_compute = false;
+        nanodet.opt.num_threads = ncnn::get_big_cpu_count();
+    }
 
 #if NCNN_VULKAN
     nanodet.opt.use_vulkan_compute = use_gpu;
