@@ -150,7 +150,10 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env,
+                                                                              jobject thiz,
+                                                                              jobject assetManager,
+                                                                              jint cpugpu)
 {
     AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
 
@@ -181,7 +184,11 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JN
 }
 
 // segmentaion 출력
-JNIEXPORT jstring JNICALL Java_com_example_demoproject_NanoDetNcnn_predict(JNIEnv *env, jobject thiz, jobject imageView, jobject bitmap) {
+JNIEXPORT jstring JNICALL Java_com_example_demoproject_NanoDetNcnn_predict(JNIEnv *env,
+                                                                           jobject thiz,
+                                                                           jobject imageView,
+                                                                           jobject bitmap)
+{
 
     // RGB형식으로 변경
     AndroidBitmapInfo info;
