@@ -28,7 +28,6 @@ public class CameraPreview extends AppCompatActivity {
     private int port_index;
     private ExecutorService executorService;
     private NanoDetNcnn nanodetncnn = new NanoDetNcnn();
-    private int current_model = 0;
     private int current_cpugpu = 1;
     int corePoolSize = 2;
     int maximumPoolSize = 4;
@@ -74,7 +73,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private void reload() {
         // 모델 : 객체 인식 모델
-        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_model, current_cpugpu);
+        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
         if (!ret_init_model)
         {
             Log.e(TAG, "nanodetncnn failed");
