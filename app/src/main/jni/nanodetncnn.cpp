@@ -150,7 +150,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint cpugpu)
 {
     AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
 
