@@ -150,7 +150,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint cpugpu)
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JNIEnv* env, jobject thiz, jobject assetManager, jint modelid, jint cpugpu)
 {
     AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
 
@@ -162,9 +162,18 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_NanoDetNcnn_loadModel(JN
     {
         ncnn::MutexLockGuard g(lock);
 
-        if (!g_nanodet){
+        if (use_gpu /*&& ncnn::get_gpu_count()*/ == 0)
+            {
+            // no gpu
+            delete g_nanodet;
             g_nanodet = new NanoDet;
-            g_nanodet->load(mgr, use_gpu);
+            g_nanodet->load(mgr, false);
+        }
+        else
+        {
+            if (!g_nanodet)
+                g_nanodet = new NanoDet;
+            g_nanodet->load(mgr, true);
         }
     }
 

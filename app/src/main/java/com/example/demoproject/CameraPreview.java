@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,11 +26,11 @@ public class CameraPreview extends AppCompatActivity {
     private ReceiveDataTask receiveDataTaskTask;
     //private SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
     private ImageView detectView;
-    private ImageView receiveimg;
     private int port_index;
     private ExecutorService executorService;
     private NanoDetNcnn nanodetncnn = new NanoDetNcnn();
-    private int current_cpugpu = 1;
+    private Spinner spinnerCPUGPU;
+    private int current_cpugpu = 0;
     int corePoolSize = 2;
     int maximumPoolSize = 4;
     long keepAliveTime = 1;
@@ -68,12 +70,30 @@ public class CameraPreview extends AppCompatActivity {
 
         startSendingResults();
         ConnectServer();
+
+        spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
+        spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
+            {
+                if (position != current_cpugpu)
+                {
+                    current_cpugpu = position;
+                    reload();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0)
+            {
+            }
+        });
+
         reload();
     }
 
     private void reload() {
         // 모델 : 객체 인식 모델
-        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
+        boolean ret_init_model = nanodetncnn.loadModel(getAssets(),0, current_cpugpu);
         if (!ret_init_model)
         {
             Log.e(TAG, "nanodetncnn failed");
@@ -87,7 +107,6 @@ public class CameraPreview extends AppCompatActivity {
         nThreads = Runtime.getRuntime().availableProcessors();
         executorService = Executors.newFixedThreadPool(nThreads);
         detectView = findViewById(R.id.detectView);
-        receiveimg = findViewById(R.id.receiveImageView);
     }
 
     public void setImageBitmap(Bitmap bitmap) {
@@ -125,6 +144,10 @@ public class CameraPreview extends AppCompatActivity {
             public void run() {
 
                 String stringValue = bboxdata; // BBOX데이터 전송
+
+                if (stringValue == null) {
+                    stringValue = "";
+                }
 
                 try {
                     Socket clientSocket = new Socket(master_IP, PORT[port_index]);
@@ -165,7 +188,6 @@ public class CameraPreview extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            receiveimg.setImageBitmap(receiveBitmap); // Update the UI on the main thread
                             bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
                         }
                     });
