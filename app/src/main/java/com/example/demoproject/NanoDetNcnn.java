@@ -7,7 +7,7 @@ import android.widget.ImageView;
 
 public class NanoDetNcnn {
 
-    public native boolean loadModel(AssetManager mgr, int modelid, int cpugpu);
+    public native boolean loadModel(AssetManager mgr, int cpugpu);
     public native String predict(ImageView imageView, Bitmap bitmap);
 
     static {
