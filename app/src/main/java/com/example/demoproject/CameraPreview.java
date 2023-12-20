@@ -22,13 +22,13 @@ import java.util.concurrent.TimeUnit;
 
 public class CameraPreview extends AppCompatActivity {
 
-    private String TAG="CameraPreview";
+    private final String TAG="CameraPreview";
     private ReceiveDataTask receiveDataTaskTask;
     //private SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
     private ImageView detectView;
     private int port_index;
     private ExecutorService executorService;
-    private NanoDetNcnn nanodetncnn = new NanoDetNcnn();
+    private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
     private Spinner spinnerCPUGPU;
     private int current_cpugpu = 0;
     int corePoolSize = 2;
@@ -43,11 +43,11 @@ public class CameraPreview extends AppCompatActivity {
     private final String master_IP = "192.168.43.1";
     //private final String master_IP = "192.168.43.91"
 
-    private final int PORT[] = {13579, 2468}; // 결과값 송신을 위한 포트
+    private final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
     private boolean sendRunning = false;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
-    private Runnable sendRunnable = new Runnable() {
+    private final Runnable sendRunnable = new Runnable() {
         @Override
         public void run() {
             executorService.submit(new Runnable() {
@@ -56,7 +56,7 @@ public class CameraPreview extends AppCompatActivity {
                     send_connect(port_index);
                 }
             });
-            handler.postDelayed(this, 100);
+            handler.postDelayed(this, 10);
         }
     };
 
@@ -93,7 +93,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private void reload() {
         // 모델 : 객체 인식 모델
-        boolean ret_init_model = nanodetncnn.loadModel(getAssets(),0, current_cpugpu);
+        boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
         if (!ret_init_model)
         {
             Log.e(TAG, "nanodetncnn failed");
