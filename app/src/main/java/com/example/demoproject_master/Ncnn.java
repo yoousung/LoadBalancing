@@ -15,9 +15,13 @@ public class Ncnn {
                                   Bitmap bitmap,
                                   boolean[] opt);
 
-    public native boolean heteroGen(ImageView imageView,
+    public native boolean heteroGenDet(ImageView imageView,
                                     Bitmap bitmap,
                                     String data);
+
+    public native boolean heteroGenSeg(ImageView imageView,
+                                    Bitmap bitmap,
+                                    Bitmap data);
 
     static {
         System.loadLibrary("ncnntotal");

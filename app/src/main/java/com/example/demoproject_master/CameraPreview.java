@@ -131,7 +131,6 @@ public class CameraPreview extends AppCompatActivity {
     public static final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
 
     private final String[] state_connecting = {"off", "off"};
-    private String Bbox_data = "";
 
     // TODO : 모델 선언부
     // 1) single
@@ -225,27 +224,26 @@ public class CameraPreview extends AppCompatActivity {
             opt[1] = toggleDet;
             opt[2] = false;
 
-            Bbox_data = receiveDataTask.getBboxdata();
-            Log.e(TAG, "BBOX : " + Bbox_data);
+            String bbox_data = receiveDataTask.getBboxdata();
+            Bitmap mask_data = null;
+//            Log.e(TAG, "BBOX : " + bbox_data);
 
-            // 1) device1 & device2 OFF
-            if (device1_state.getText().equals("off") && device2_state.getText().equals("off")) {
-                model.homoGen(bdbox, bitmap, opt);
+            model.homoGen(bdbox, bitmap, opt);
+            if (bbox_data != null) {
+                Drawable drawable = bdbox.getDrawable();
+                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+
+                bdbox.setImageBitmap(null);
+
+                model.heteroGenDet(bdbox, newbitmap, bbox_data);
             }
-            // 2) device1 ON
-            else {
-                if (Bbox_data != null) {
-                    model.homoGen(bdbox, bitmap, opt);
+            if (mask_data != null) {
+                Drawable drawable = bdbox.getDrawable();
+                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
 
-                    Drawable drawable = bdbox.getDrawable();
-                    Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+                bdbox.setImageBitmap(null);
 
-                    bdbox.setImageBitmap(null);
-
-                    model.heteroGen(bdbox, newbitmap, Bbox_data);
-                } else {
-                    model.homoGen(bdbox, bitmap, opt);
-                }
+                model.heteroGenSeg(bdbox, newbitmap, mask_data);
             }
 
             long currentTime = System.currentTimeMillis();
