@@ -499,27 +499,34 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
             {56,  0, 255},
             {255, 0, 56},
     };
-
+    cv::Mat masks[objects.size()], floatMask, setMask;
     for (int i = 0; i < objects.size(); i++) {
         const Yolov8Object& obj = objects[i];
-        const unsigned char* color = colors[obj.label];
+        obj.cv_mask.convertTo(floatMask, CV_32FC1);
+        cv::threshold(floatMask, setMask, 0.5, obj.label + 1, cv::THRESH_BINARY);
+        setMask.convertTo(setMask, CV_8UC1);
+        masks[i] = setMask;
+    }
 
-        cv::Scalar cc(color[0], color[1], color[2]);
+    cv::Mat mask = cv::Mat::zeros(cv::Size(rgb.cols, rgb.rows), CV_8UC1);
+    for (int i = 0; i < objects.size(); ++i) {
+        cv::max(mask, masks[i], mask);
+    }
+    set_mask(mask);
 
-//        fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
-//                obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
-        #pragma omp parallel for
-        for(int y = 0; y < rgb.rows; y++){
-            unsigned char* image_ptr = rgb.ptr(y);
-            const float* mask_ptr = obj.cv_mask.ptr<float>(y);
-            for(int x = 0; x < rgb.cols; x++){
-                if(mask_ptr[x] >= 0.5){
-                    image_ptr[0] = cv::saturate_cast<unsigned char>(image_ptr[0] * 0.5 + color[2] * 0.5);
-                    image_ptr[1] = cv::saturate_cast<unsigned char>(image_ptr[1] * 0.5 + color[1] * 0.5);
-                    image_ptr[2] = cv::saturate_cast<unsigned char>(image_ptr[2] * 0.5 + color[0] * 0.5);
-                }
-                image_ptr += 3;
+    const unsigned char* color;
+    for (int y = 0; y < rgb.rows; y++) {
+        uchar* image_ptr = rgb.ptr(y);
+        const auto* mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < rgb.cols; x++) {
+            int mask_value = mask_ptr[x];
+            if (mask_value == 1 || mask_value == 2) {
+                color = colors[mask_value - 1];
+                image_ptr[0] = cv::saturate_cast<uchar>(image_ptr[0] * 0.5 + color[2] * 0.5);
+                image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
+                image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
             }
+            image_ptr += 3;
         }
     }
 

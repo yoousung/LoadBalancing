@@ -87,12 +87,6 @@ static int draw_fps(cv::Mat& rgb)
     return 0;
 }
 
-// 모델 3개 이용
-static Yolov8* g_yolo = 0;
-static ncnn::Mutex lock;
-
-bool setBitmapFromMat(JNIEnv *pEnv, jobject pJobject, cv::Mat mat);
-
 jobject MatToBitmap(JNIEnv *env, cv::Mat src){
     jclass bitmapConfigClass = env->FindClass("android/graphics/Bitmap$Config");
     jfieldID argb8888FieldID = env->GetStaticFieldID(bitmapConfigClass, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
@@ -127,10 +121,12 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src){
     return bitmap;
 }
 
+static Yolov8 *g_yolo = 0;
+static ncnn::Mutex lock;
+
 extern "C" {
 
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
-{
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "JNI_OnLoad");
 
 return JNI_VERSION_1_4;
@@ -148,12 +144,11 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_com_example_demoproject_Yolov8Ncnn_loadModel(JNIEnv* env,
-                                                                                     jobject thiz,
-                                                                                     jobject assetManager,
-                                                                                     jint cpugpu)
-{
-    AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
+JNIEXPORT jboolean JNICALL Java_com_example_demoproject_Yolov8Ncnn_loadModel(JNIEnv *env,
+                                                                             jobject thiz,
+                                                                             jobject assetManager,
+                                                                             jint cpugpu) {
+    AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
 
     __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "loadModel %p", mgr);
 
@@ -167,38 +162,37 @@ JNIEXPORT jboolean JNICALL Java_com_example_demoproject_Yolov8Ncnn_loadModel(JNI
         {
             // no gpu
             delete g_yolo;
-            g_yolo = 0;
-        }
-        else
-        {
+            g_yolo = new Yolov8;
+            g_yolo->load(mgr, false);
+        } else {
             if (!g_yolo)
                 g_yolo = new Yolov8;
-            g_yolo->load(mgr, use_gpu);
+            g_yolo->load(mgr, true);
         }
     }
 
     return JNI_TRUE;
 }
 
-JNIEXPORT jstring JNICALL Java_com_example_demoproject_Yolov8Ncnn_predict(JNIEnv *env,
-                                                                                  jobject thiz,
-                                                                                  jobject imageView,
-                                                                                  jobject bitmap) {
+JNIEXPORT jobject JNICALL Java_com_example_demoproject_Yolov8Ncnn_predict(JNIEnv *env,
+                                                                          jobject thiz,
+                                                                          jobject imageView,
+                                                                          jobject bitmap) {
 
     // RGB형식으로 변경
     AndroidBitmapInfo info;
     if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        return nullptr;
+        return JNI_FALSE;
     }
 
     if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        return nullptr;
+        return JNI_FALSE;
     }
 
     // Get the pointer to bitmap pixels
     void* bitmapPixels;
     if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        return nullptr;
+        return JNI_FALSE;
     }
 
     // Create a cv::Mat from the bitmap data
@@ -208,27 +202,34 @@ JNIEXPORT jstring JNICALL Java_com_example_demoproject_Yolov8Ncnn_predict(JNIEnv
     cv::Mat rgb;
     cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
 
-    //cv::resize(rgb,rgb,cv::Size(640,640));
-
     // 이미지 뷰 업데이트 JNI 호출
     jclass imageViewClass = env->GetObjectClass(imageView);
-    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap", "(Landroid/graphics/Bitmap;)V");
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
+                                                      "setImageBitmap",
+                                                      "(Landroid/graphics/Bitmap;)V");
 
     ncnn::MutexLockGuard g(lock);
 
     // yolov8
-    if(g_yolo){
+    if (g_yolo)
+    {
         std::vector<Yolov8Object> objects;
+        cv::Mat result;
+
         g_yolo->detect(rgb, objects);
         g_yolo->draw(rgb, objects);
 
-        draw_fps(rgb);
+        result = g_yolo->get_mask();
+        jobject jResult = MatToBitmap(env, result);
+
+        // draw_fps(rgb);
+
         // 자바로 반환, imageView 나타내기
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
-    }
 
-    else{
+        return jResult;
+    } else {
         draw_unsupported(rgb);
     }
 

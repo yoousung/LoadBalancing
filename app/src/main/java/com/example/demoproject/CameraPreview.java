@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +29,12 @@ public class CameraPreview extends AppCompatActivity {
     private ImageView detectView;
     private int port_index;
     private ExecutorService executorService;
+    // detection
     private final NanoDetNcnn nanodetncnn = new NanoDetNcnn();
+    private String bboxdata =" ";
+    // segmentation
+//    private final Yolov8Ncnn yolov8ncnn = new Yolov8Ncnn();
+//    private Bitmap maskdata;
     private Spinner spinnerCPUGPU;
     private int current_cpugpu = 0;
     int corePoolSize = 2;
@@ -37,7 +43,6 @@ public class CameraPreview extends AppCompatActivity {
     private int nThreads;
     private Bitmap receiveBitmap;
     private final Object bitmapLock = new Object();
-    private String bboxdata =" ";
 
     // 데이터 송신
     private final String master_IP = "192.168.43.1";
@@ -92,12 +97,12 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        // 모델 : 객체 인식 모델
+        // detection
         boolean ret_init_model = nanodetncnn.loadModel(getAssets(), current_cpugpu);
+        // segmentation
+//        boolean ret_init_model = yolov8ncnn.loadModel(getAssets(), current_cpugpu);
         if (!ret_init_model)
-        {
-            Log.e(TAG, "nanodetncnn failed");
-        }
+            Log.e(TAG, "model load failed");
     }
 
     private void initsetting(){
@@ -137,13 +142,13 @@ public class CameraPreview extends AppCompatActivity {
         executorService.shutdown();
         handler.removeCallbacksAndMessages(null);
     }
-
+// detection
     private void send_connect(int port_index){
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                String stringValue = bboxdata; // BBOX데이터 전송
+                String stringValue = bboxdata; // BBOX 데이터 전송
 
                 if (stringValue == null) {
                     stringValue = "";
@@ -165,6 +170,30 @@ public class CameraPreview extends AppCompatActivity {
             }
         }).start();
     }
+
+    // segmentation
+//    private void send_connect(int port_index){
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+//
+//                byte[] byteArray = stream.toByteArray();
+//
+//                try {
+//                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+//                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+//
+//                    outToServer.write(byteArray);
+//                    outToServer.flush(); // 버퍼 비우기
+//                    clientSocket.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//    }
 
     // 수신부
     private void DisconnectServer(){
@@ -188,7 +217,10 @@ public class CameraPreview extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
+                            // detection
+                              bboxdata = nanodetncnn.predict(detectView, receiveBitmap);
+                            // segmentation
+//                            maskdata = yolov8ncnn.predict(detectView, receiveBitmap);
                         }
                     });
 
@@ -212,6 +244,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private void send_disconnect(int port_index){
         new Thread(new Runnable() {
+            // detection
             @Override
             public void run() {
                 String stringValue = "off";
@@ -228,6 +261,25 @@ public class CameraPreview extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
+            // segmentation
+//            @Override
+//            public void run() {
+//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                maskdata.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+//                byte[] byteArray = stream.toByteArray();
+//
+//                try {
+//                    Socket clientSocket = new Socket(master_IP, PORT[port_index]);
+//                    BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+//
+//                    outToServer.write(byteArray);
+//                    outToServer.flush(); // 버퍼 비우기
+//                    clientSocket.close();
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }).start();
     }
 
