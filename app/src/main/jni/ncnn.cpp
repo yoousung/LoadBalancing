@@ -306,6 +306,8 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
 
     ncnn::MutexLockGuard g(lock);
 
+    int index=0;
+
     if (g_nanodet) {
 
         const char *cstr = env->GetStringUTFChars(data, nullptr);
@@ -321,7 +323,8 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
             std::string token;
             while (std::getline(iss, token, '/')) {
                 NanoDetObject obj;
-                sscanf(token.c_str(), "%d %f %f %f %f %f",
+                sscanf(token.c_str(), "%d %d %f %f %f %f %f",
+                       &index,
                        &obj.label,
                        &obj.prob,
                        &obj.rect.x,
@@ -331,11 +334,12 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
 
                 objects.push_back(obj);
             }
-            g_nanodet->draw(rgb, objects);
+            //g_nanodet->draw(rgb, objects);
+            g_nanodet->drawbbox(rgb, objects, index);
+
             objects.clear();
         }
 
-        draw_fps(rgb);
         // 자바로 반환환
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
