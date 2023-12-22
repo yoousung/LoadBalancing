@@ -82,6 +82,22 @@ public class CameraPreview extends AppCompatActivity {
             }
         });
 
+        Button exitButton = findViewById(R.id.exit_button);
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 앱 종료
+                finishAffinity();
+
+                // 앱 재시작
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+
         Context context = getApplicationContext();
         initsetting();
         sendDataTask.set_socket(ip_data);
