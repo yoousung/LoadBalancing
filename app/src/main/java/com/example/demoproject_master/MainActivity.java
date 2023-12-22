@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView connectedDevices;
     private Button scanButton;
     private Button cameraButton;
+    private Button exitButton;
     private LinearLayout linearLayout_Device1;
     private LinearLayout linearLayout_Device2;
     private Switch device_switch1;
@@ -92,6 +93,21 @@ public class MainActivity extends AppCompatActivity {
                 start_IP(ip_data);
             }
         });
+
+        // 재시작 버튼 클릭시 -> 앱 재시작
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 앱 종료
+                finishAffinity();
+
+                // 앱 재시작
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
     }
 
     // View초기설정
@@ -101,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         connectedDevices = findViewById(R.id.connectedDevices);
         scanButton = findViewById(R.id.scan_button);
         cameraButton = findViewById(R.id.camera_button);
+        exitButton = findViewById(R.id.exit_button);
         linearLayout_Device1 = findViewById(R.id.linearlayout_device1);
         linearLayout_Device2 = findViewById(R.id.linearlayout_device2);
         device_switch1 = findViewById(R.id.device_switch1);

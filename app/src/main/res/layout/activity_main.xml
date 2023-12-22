@@ -76,11 +76,12 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:id="@+id/linearlayout_device1">
+
                     <TextView
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="25dp"
-                        android:text="Device1 IP : "/>
+                        android:layout_height="match_parent"
+                        android:text="Device1 IP : "
+                        android:textSize="25dp" />
                     <TextView
                         android:id="@+id/connect_Device1"
                         android:layout_width="match_parent"
@@ -90,23 +91,40 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/linearlayout_device2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:id="@+id/linearlayout_device2">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="25dp"
-                        android:text="Device2 IP : "/>
+                        android:text="Device2 IP : "
+                        android:textSize="25dp" />
+
                     <TextView
                         android:id="@+id/connect_Device2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="25dp"
-                        android:text="..."/>
+                        android:text="..."
+                        android:textSize="25dp" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/exit"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/exit_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="재시작"
+                        app:backgroundTint="#000000" />
+                </LinearLayout>
             </LinearLayout>
 
             // 스위치 추가
