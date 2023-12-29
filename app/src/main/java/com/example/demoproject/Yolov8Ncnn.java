@@ -8,7 +8,7 @@ public class Yolov8Ncnn {
     public native boolean loadModel(AssetManager mgr, int cpugpu);
     public native Bitmap predict(ImageView imageView, Bitmap bitmap);
     static {
-        System.loadLibrary("ncnnyolov8");
+        System.loadLibrary("yolov8ncnn");
     }
 }
 
