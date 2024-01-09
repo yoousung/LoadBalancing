@@ -21,6 +21,7 @@
 
 struct NanoDetObject
 {
+    int index=0;
     cv::Rect_<float> rect;
     int label;
     float prob;
@@ -36,6 +37,8 @@ public:
     int detect(const cv::Mat& rgb, std::vector<NanoDetObject>& objects, float prob_threshold = 0.4f, float nms_threshold = 0.5f);
 
     int draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects);
+
+    int drawbbox(cv::Mat& rgb, const std::vector<NanoDetObject>& objects, int index);
 
 private:
     ncnn::Net nanodet;

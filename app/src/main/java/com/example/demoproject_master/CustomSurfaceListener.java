@@ -73,6 +73,8 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         Drawable drawable = bdbox.getDrawable();
         Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
 
+        // TODO 동작설정
+
         // 2-1) BBOX그리기
 //        String bboxdata = BboxDataHolder.getInstance().getBboxdata();
 //        //Log.e("CustomSurfaceListener", "BBOX : " + bboxdata);

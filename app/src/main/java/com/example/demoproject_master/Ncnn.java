@@ -4,8 +4,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
-import java.util.ArrayList;
-
 public class Ncnn {
     public native boolean loadModel(AssetManager mgr,
                                     int modelid,

@@ -68,9 +68,8 @@ public class ServerThread implements Runnable {
                     }
                 });
                 // main으로 데이터 전송
-                Message message = uiHandler.obtainMessage(1, receivedText);
+                Message message = uiHandler.obtainMessage(MESSAGE_BBOX_DATA, receivedText);
                 uiHandler.sendMessage(message);
-
 
                 // 클라이언트 소켓 닫기
                 clientSocket.close();

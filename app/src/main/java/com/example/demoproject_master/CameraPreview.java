@@ -46,8 +46,6 @@ public class CameraPreview extends AppCompatActivity {
     private TextView device1_state;
     private TextView device2_state;
 
-    private String bboxdata;
-
     private String ip_data;
     private int case_index;
     private Handler handler = new Handler();
@@ -58,7 +56,11 @@ public class CameraPreview extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case ServerThread2.MESSAGE_BBOX_DATA:
+                case ServerThread.MESSAGE_BBOX_DATA:
+                    String bboxdata = (String) msg.obj;
+                    updateBboxdata(bboxdata);
+                    break;
+                case ServerThread2.MESSAGE_SEG_DATA:
                     Bitmap receivedBitmap = (Bitmap) msg.obj;
                     // 받아온 Bitmap을 사용하여 UI 업데이트 등을 수행
                     updateBboxImage(receivedBitmap);
@@ -83,11 +85,15 @@ public class CameraPreview extends AppCompatActivity {
         this.case_index = getIntent().getIntExtra("case_index", -1);
         this.ip_data = getIntent().getStringExtra("ip_data");
 
+        //Log.e(TAG, "IP : "+ip_data);
+
         reload();
-//Device1
-//        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state,device2_state));
-//        serverThread.start();
-        // Device2
+
+        // Device1 (BBOX)
+        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state,device2_state));
+        serverThread.start();
+
+        // Device2 (SEG)
         Thread serverThread2 = new Thread(new ServerThread2(uiHandler,bdbox));
         serverThread2.start();
 

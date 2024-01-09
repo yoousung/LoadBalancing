@@ -563,7 +563,7 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
 
                 objects.push_back(obj);
             }
-            //g_nanodet->drawbbox(rgb, objects, index);
+            g_nanodet->drawbbox(rgb, objects, index);
             objects.clear();
         }
         //draw_fps(rgb);

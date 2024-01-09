@@ -19,7 +19,7 @@ public class ServerThread2 implements Runnable {
 
     private Handler uiHandler;
     private int serverPort = 2468;
-    public static final int MESSAGE_BBOX_DATA = 1;
+    public static final int MESSAGE_SEG_DATA = 2;
 
     private ImageView bdbox;
 
@@ -55,14 +55,14 @@ public class ServerThread2 implements Runnable {
 
                 if (receiveBitmap != null) {
                     // 메인 액티비티로 Bitmap 전달
-                    Message message = uiHandler.obtainMessage(MESSAGE_BBOX_DATA, receiveBitmap);
+                    Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
                     uiHandler.sendMessage(message);
                 }
 
                 // 클라이언트 소켓 닫기
                 clientSocket.close();
 
-                Log.e("SEG", "Received!");
+                //Log.e("SEG", "Received!");
             }
         } catch (IOException e) {
             e.printStackTrace();

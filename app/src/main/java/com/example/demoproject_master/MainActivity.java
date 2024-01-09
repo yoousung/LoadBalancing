@@ -46,10 +46,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cameraPreview = new CameraPreview();
+
         setPermission();
         initViews();
-
         // 전송할 Device선택
         device_switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 set_socket();
-                start_IP(ip_data);
+                start_CameraPreviewActivity(case_index, ip_data);
             }
         });
     }
@@ -121,35 +120,27 @@ public class MainActivity extends AppCompatActivity {
         // on, off
         if(device1_state && !device2_state){
             case_index = 1;
-            start_CameraPreview(case_index);
         }
 
         // off, on
         if(!device1_state && device2_state){
             case_index = 2;
-            start_CameraPreview(case_index);
         }
 
         // on, on
         if(device1_state && device2_state){
             case_index = 3;
-            start_CameraPreview(case_index);
         }
     }
 
     // 카메라 프리뷰 시작
-    private void start_CameraPreview(int case_index){
+    private void start_CameraPreviewActivity(int caseIndex, String ipData) {
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
-        intent.putExtra("case_index", case_index);
+        intent.putExtra("case_index", caseIndex);
+        intent.putExtra("ip_data", ipData);
         startActivity(intent);
     }
 
-    // IP넘겨주기
-    private void start_IP(String ip_data){
-        Intent intent = new Intent(MainActivity.this, CameraPreview.class);
-        intent.putExtra("ip_data", ip_data);
-        startActivity(intent);
-    }
 
     // 핫스팟에 연결된 Device와 IP
     private void view_connect_device(){
