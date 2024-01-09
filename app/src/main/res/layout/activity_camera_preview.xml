@@ -20,14 +20,25 @@
             android:drawSelectorOnTop="true"
             android:entries="@array/cpugpu_array" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FPS : "/>
+
+        <TextView
+            android:id="@+id/textview_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="..."/>
+
     </LinearLayout>
 
     <ImageView
         android:id="@+id/detectView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:background="@color/black" />
 
 
 </LinearLayout>
