@@ -23,6 +23,16 @@ public class Ncnn {
                                     Bitmap bitmap,
                                     Bitmap data);
 
+    public native boolean predict(ImageView imageView, Bitmap bitmap,  boolean[] opt);
+
+    public native boolean draw_Bbox(ImageView imageView,
+                                    Bitmap bitmap,
+                                    String data);
+
+    public native boolean draw_Seg(ImageView imageView,
+                                   Bitmap bitmap,
+                                   Bitmap segbitmap);
+
     static {
         System.loadLibrary("ncnntotal");
     }

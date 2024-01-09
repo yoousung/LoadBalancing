@@ -31,6 +31,8 @@ public:
 
     int draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects);
 
+    int drawseg(cv::Mat& rgb, cv::Mat& mask);
+
 private:
 
     ncnn::Net yolov8;

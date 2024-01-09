@@ -381,7 +381,8 @@ int Yolov8::load(AAssetManager* mgr, bool use_gpu)
 #if NCNN_VULKAN
     yolov8.opt.use_vulkan_compute = use_gpu;
 #endif
-    yolov8.opt.num_threads = ncnn::get_big_cpu_count();
+    //yolov8.opt.num_threads = ncnn::get_big_cpu_count();
+    yolov8.opt.num_threads = 1;
     yolov8.opt.blob_allocator = &blob_pool_allocator;
     yolov8.opt.workspace_allocator = &workspace_pool_allocator;
 
@@ -549,5 +550,31 @@ int Yolov8::draw(cv::Mat& rgb, const std::vector<Yolov8Object>& objects)
     }
     
     
+    return 0;
+}
+
+int Yolov8::drawseg(cv::Mat& rgb, cv::Mat& mask)
+{
+    static const unsigned char colors[2][3] = {
+            /*{56,  0, 255},
+            {255, 0, 56},*/
+            {0,0,255},{255,0,0},
+    };
+
+    const unsigned char* color;
+    for (int y = 0; y < rgb.rows; y++) {
+        uchar* image_ptr = rgb.ptr(y);
+        const auto* mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < rgb.cols; x++) {
+            int mask_value = mask_ptr[x];
+            if (mask_value == 1 || mask_value == 2) {
+                color = colors[mask_value - 1];
+                image_ptr[0] = cv::saturate_cast<uchar>(image_ptr[0] * 0.5 + color[2] * 0.5);
+                image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
+                image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
+            }
+            image_ptr += 3;
+        }
+    }
     return 0;
 }

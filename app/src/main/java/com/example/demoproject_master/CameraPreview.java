@@ -8,6 +8,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -24,35 +26,87 @@ import java.util.concurrent.Executors;
 
 public class CameraPreview extends AppCompatActivity {
 
+    private CameraHandler cameraHandler;
+    private TextureView textureView;
     private final String TAG = "CameraPreviewTask";
-    private TextureView cameraview;
-    private CameraSetting cameraSetting; // class
-    private final SendDataTask sendDataTask = new SendDataTask(CameraPreview.this);
-    private final ReceiveDataTask receiveDataTask = new ReceiveDataTask(CameraPreview.this);
-    private long lastCaptureTime;
-    private ExecutorService executorService;
-    private int current_model = 0;
-    private int current_cpugpu = 1; // GPU사용
-    private String ip_data;
-    private int case_index;
-    private ImageView bdbox;
-    private TextView device1_state;
-    private TextView device2_state;
+
+    private Button startBtn;
+    private Button toggleSegButton;
+    private Button toggleDetButton;
+
     private boolean toggleSeg = false;
     private boolean toggleDet = false;
     private boolean toggleThird = false;
 
+    private Ncnn model = new Ncnn();
+    private int current_model = 0;
+    private int current_cpugpu = 1; // GPU사용
+    private ImageView bdbox;
+
+    private TextView device1_state;
+    private TextView device2_state;
+
+    private String bboxdata;
+
+    private String ip_data;
+    private int case_index;
     private Handler handler = new Handler();
 
+    // 송수신 데이터 자바내 데이터 송수신
+    private Handler uiHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case ServerThread2.MESSAGE_BBOX_DATA:
+                    Bitmap receivedBitmap = (Bitmap) msg.obj;
+                    // 받아온 Bitmap을 사용하여 UI 업데이트 등을 수행
+                    updateBboxImage(receivedBitmap);
+                    break;
+            }
+        }
+    };
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_preview);
 
-        // Seg Button 클릭 이벤트
-        Button toggleSegButton = findViewById(R.id.toggleSegButton);
+        textureView = findViewById(R.id.camera_view);
+        assert textureView != null;
+        this.startBtn = findViewById(R.id.btn_start);
+        this.toggleSegButton = findViewById(R.id.toggleSegButton);
+        this.toggleDetButton = findViewById(R.id.toggleDetButton);
+        this.bdbox = findViewById(R.id.bdbox_imageview);
+        this.device1_state = findViewById(R.id.device1_state);
+        this.device2_state = findViewById(R.id.device2_state);
+        this.case_index = getIntent().getIntExtra("case_index", -1);
+        this.ip_data = getIntent().getStringExtra("ip_data");
+
+        reload();
+//Device1
+//        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state,device2_state));
+//        serverThread.start();
+        // Device2
+        Thread serverThread2 = new Thread(new ServerThread2(uiHandler,bdbox));
+        serverThread2.start();
+
+        // set the camera preview state
+        this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
+        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
+
+        // stop/start the client to server bytes transfer
+        this.startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StateSingleton.getInstance().runScanning = !StateSingleton.getInstance().runScanning;
+                startBtn.setText(startBtn.getText().equals("Start") ? "Stop" : "Start");
+            }
+        });
+
+        // Seg Button
         updateButtonText(toggleSegButton, "Seg", toggleSeg);
-        toggleSegButton.setOnClickListener(new View.OnClickListener() {
+        this.toggleSegButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleSeg = !toggleSeg; // 토글
@@ -62,14 +116,14 @@ public class CameraPreview extends AppCompatActivity {
                 updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
                 Log.d(TAG, "toggleSegButton clicked, isEnabled: " + toggleSegButton.isEnabled());
+
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
             }
         });
 
-        // Det button 클릭 이벤트
-        Button toggleDetButton = findViewById(R.id.toggleDetButton);
-        // 버튼 색상 및 글자색 변경
+        // Det Button
         updateButtonText(toggleDetButton, "Det", toggleDet);
-        toggleDetButton.setOnClickListener(new View.OnClickListener() {
+        this.toggleDetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleDet = !toggleDet; // 토글
@@ -78,31 +132,11 @@ public class CameraPreview extends AppCompatActivity {
                 // 버튼 텍스트 변경
                 updateButtonText(toggleDetButton, "Det", toggleDet);
 
-                Log.d(TAG, "toggleDetButton clicked, isEnabled: " + toggleDetButton.isEnabled());
+                Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
+
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
             }
         });
-
-        Context context = getApplicationContext();
-        initsetting();
-        sendDataTask.set_socket(ip_data);
-
-        reload();
-        startSendingResults();
-    }
-
-    @Override
-    public void onBackPressed() {
-        stopSendingResults();
-
-        bdbox.setImageBitmap(null);
-        cameraSetting.closeCamera();
-
-        Intent intent = new Intent(CameraPreview.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
-        super.onBackPressed();
-        finish();
     }
 
     private void updateButtonText(Button button, String label, boolean isToggleOn) {
@@ -110,58 +144,10 @@ public class CameraPreview extends AppCompatActivity {
         button.setText(buttonText);
     }
 
-    private boolean sendRunning = false;
-    private Runnable receiveRunnable = new Runnable() {
-        @Override
-        public void run() {
-            for (int port_index = 0; port_index < 2; port_index++) {
-                final int currentPortIndex = port_index;
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (sendRunning) {
-                            receiveDataTask.receive_state(currentPortIndex);
-                        }
-                    }
-                });
-            }
-            handler.postDelayed(this, 100); // 8fps로 데이터 수신
-        }
-    };
-    public static final int[] PORT = {13579, 2468}; // 결과값 송신을 위한 포트
-
-    private final String[] state_connecting = {"off", "off"};
-
-    // TODO : 모델 선언부
-    // 1) single
-    // nanodet
-    // private NanoDetNcnn model = new NanoDetNcnn();
-    // yolov8
-    // private Yolov8Ncnn model = new Yolov8Ncnn();
-
-    // 2) multi
-    private Ncnn model = new Ncnn();
-
-    private void initsetting() {
-        // Main에서 셋팅값 가져오기
-        case_index = getIntent().getIntExtra("case_index", -1);
-        ip_data = getIntent().getStringExtra("ip_data");
-        // 스레드 풀 초기화
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        int nThreads = Runtime.getRuntime().availableProcessors();
-        executorService = Executors.newFixedThreadPool(nThreads);
-        device1_state = findViewById(R.id.device1_state);
-        device2_state = findViewById(R.id.device2_state);
-        cameraview = findViewById(R.id.camera_view);
-        cameraview.setSurfaceTextureListener(textureListener);
-        bdbox = findViewById(R.id.bdbox_imageview);
-        cameraSetting = new CameraSetting(CameraPreview.this, cameraview);
-    }
-
     private void reload() {
         // TODO : 모델 로드부
         // single
-//        model.loadModel(getAssets(), current_model, current_cpugpu);
+        // model.loadModel(getAssets(), current_model, current_cpugpu);
 
         // multi
         if (!model.loadModel(getAssets(), current_model, current_cpugpu))
@@ -169,107 +155,11 @@ public class CameraPreview extends AppCompatActivity {
         Log.e(TAG, "model load success");
     }
 
-    public void setImageBitmap(Bitmap bitmap) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        bdbox.setImageBitmap(bitmap);
-                    }
-                });
-            }
-        }).start();
+    private void updateBboxdata(String data) {
+        BboxDataHolder.getInstance().setBboxdata(data);
     }
 
-    @Override
-    protected void onDestroy() {
-        bdbox.setImageBitmap(null);
-        cameraSetting.closeCamera();
-
-        stopSendingResults();
-        executorService.shutdown();
-
-        handler.removeCallbacksAndMessages(null);
-
-        super.onDestroy();
-        executorService.shutdown();
-        stopSendingResults();
-    }
-
-    private final TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
-        @Override
-        public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
-            cameraSetting.openCamera();
-        }
-
-        @Override
-        public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
-            return false;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
-
-            Bitmap bitmap = cameraview.getBitmap();
-
-            // TODO: 모델 추론부
-            boolean[] opt = new boolean[3];
-            opt[0] = toggleSeg;
-            opt[1] = toggleDet;
-            opt[2] = false;
-
-            String bbox_data = receiveDataTask.getBboxdata();
-            Bitmap mask_data = null;
-//            Log.e(TAG, "BBOX : " + bbox_data);
-
-            model.homoGen(bdbox, bitmap, opt);
-            if (bbox_data != null) {
-                Drawable drawable = bdbox.getDrawable();
-                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
-
-                bdbox.setImageBitmap(null);
-
-                model.heteroGenDet(bdbox, newbitmap, bbox_data);
-            }
-            if (mask_data != null) {
-                Drawable drawable = bdbox.getDrawable();
-                Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
-
-                bdbox.setImageBitmap(null);
-
-                model.heteroGenSeg(bdbox, newbitmap, mask_data);
-            }
-
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastCaptureTime >= 100) {
-                lastCaptureTime = currentTime;
-                for (int deviceIndex = 0; deviceIndex < 2; deviceIndex++) {
-                    final int currentDeviceIndex = deviceIndex;
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendDataTask.sendBitmapOverNetwork(bitmap, currentDeviceIndex);
-                            receiveDataTask.set_state(device1_state, device2_state);
-                        }
-                    });
-                }
-            }
-        }
-    };
-
-    public void stopSendingResults() {
-        sendRunning = false;
-        handler.removeCallbacks(receiveRunnable);
-    }
-
-    public void startSendingResults() {
-        sendRunning = true;
-        handler.post(receiveRunnable);
+    private void updateBboxImage(Bitmap receivedBitmap) {
+        SegDataHolder.getInstance().setSegdata(receivedBitmap);
     }
 }
