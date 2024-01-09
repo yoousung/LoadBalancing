@@ -90,16 +90,16 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (BBOX)
-        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state,device2_state));
+        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThread2(uiHandler,bdbox));
+        Thread serverThread2 = new Thread(new ServerThread2(uiHandler,device2_state, bdbox));
         serverThread2.start();
 
         // set the camera preview state
         this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
+        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox, device1_state, device2_state));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
@@ -123,7 +123,7 @@ public class CameraPreview extends AppCompatActivity {
 
                 Log.d(TAG, "toggleSegButton clicked, isEnabled: " + toggleSegButton.isEnabled());
 
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
             }
         });
 
@@ -140,7 +140,7 @@ public class CameraPreview extends AppCompatActivity {
 
                 Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
 
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox));
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
             }
         });
     }

@@ -21,7 +21,6 @@
 
 struct NanoDetObject
 {
-    int index=0;
     cv::Rect_<float> rect;
     int label;
     float prob;

@@ -18,17 +18,15 @@ public class ServerThread implements Runnable {
 
     private Handler uiHandler;
     private TextView device1_state;
-    private TextView device2_state;
 
     private int serverPort = 13579;
     public static final int MESSAGE_BBOX_DATA = 1;
 
     private volatile String Bbox_data; // "volatile" 추가
 
-    public ServerThread(Handler uiHandler, TextView device1_state, TextView device2_state){
+    public ServerThread(Handler uiHandler, TextView device1_state){
         this.uiHandler = uiHandler;
         this.device1_state = device1_state;
-        this.device2_state = device2_state;
     }
 
     @Override

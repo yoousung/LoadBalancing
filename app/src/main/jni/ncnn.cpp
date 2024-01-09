@@ -552,8 +552,7 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
             std::string token;
             while (std::getline(iss, token, '/')) {
                 NanoDetObject obj;
-                sscanf(token.c_str(), "%d %d %f %f %f %f %f",
-                       &index,
+                sscanf(token.c_str(), "%d %f %f %f %f %f",
                        &obj.label,
                        &obj.prob,
                        &obj.rect.x,

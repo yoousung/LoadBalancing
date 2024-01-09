@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,15 +19,16 @@ import java.net.Socket;
 public class ServerThread2 implements Runnable {
 
     private Handler uiHandler;
+    private TextView device2_state;
     private int serverPort = 2468;
     public static final int MESSAGE_SEG_DATA = 2;
 
     private ImageView bdbox;
 
-    public ServerThread2(Handler uiHandler, ImageView bdbox){
+    public ServerThread2(Handler uiHandler, TextView device2_state, ImageView bdbox){
         this.uiHandler = uiHandler;
+        this.device2_state = device2_state;
         this.bdbox = bdbox;
-
     }
 
     @Override
@@ -53,11 +55,24 @@ public class ServerThread2 implements Runnable {
                 byte[] receivedData = byteArrayOutputStream.toByteArray();
                 Bitmap receiveBitmap = BitmapFactory.decodeByteArray(receivedData, 0, receivedData.length);
 
-                if (receiveBitmap != null) {
-                    // 메인 액티비티로 Bitmap 전달
-                    Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
-                    uiHandler.sendMessage(message);
-                }
+                // UI 업데이트를 메인 스레드에서 처리
+                uiHandler.post(() -> {
+                    if (receiveBitmap != null){
+                        device2_state.setText("on");
+                    } else {
+                        device2_state.setText("off");
+                    }
+                });
+
+                // 메인 액티비티로 Bitmap 전달
+                Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
+                uiHandler.sendMessage(message);
+
+//                if (receiveBitmap != null) {
+//                    // 메인 액티비티로 Bitmap 전달
+//                    Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
+//                    uiHandler.sendMessage(message);
+//                }
 
                 // 클라이언트 소켓 닫기
                 clientSocket.close();
