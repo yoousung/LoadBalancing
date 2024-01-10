@@ -627,7 +627,7 @@ Java_com_example_demoproject_1master_Ncnn_draw_1Seg(JNIEnv *env, jobject thiz, j
     int height2 = info2.height;
     cv::Mat rgba2(height2, width2, CV_8UC4, bitmapPixels2);
     cv::Mat rgb2;
-    cv::cvtColor(rgba2, rgb2, cv::COLOR_RGBA2RGB);
+    cv::cvtColor(rgba2, rgb2, cv::COLOR_RGBA2GRAY);
 
     __android_log_print(ANDROID_LOG_ERROR, "ncnn" , "IMG : Height = %d, Width = %d\nSEG : Height = %d, Width = %d",height,width,height2,width2) ;
 
