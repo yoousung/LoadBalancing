@@ -7,6 +7,13 @@
 |갤럭시 s22(Server)|
 |![Screenshot_20231222_005406_DemoProject](https://github.com/bert13069598/LoadBalancing/assets/89738612/b11a6f93-9214-4b89-96e1-dba3c98910c2)|
 
+### Setting
+- Gradle JDK corretto-11
+- CMake 3.22.1
+- [opencv](https://github.com/nihui/opencv-mobile/releases)
+- [ncnn](https://github.com/Tencent/ncnn/releases)
+
+CMakeLists.txt
 ```cmake
 project(nanodetncnn)
 
@@ -24,7 +31,6 @@ target_link_libraries(ncnntotal ncnn ${OpenCV_LIBS} mediandk jnigraphics)
 
 ### detection
 nanodet
-
 
 ### segmentation
 yolov8-seg
