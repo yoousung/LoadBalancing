@@ -7,6 +7,21 @@
 |갤럭시 s22(Server)|
 |![Screenshot_20231222_005406_DemoProject](https://github.com/bert13069598/LoadBalancing/assets/89738612/b11a6f93-9214-4b89-96e1-dba3c98910c2)|
 
+```cmake
+project(nanodetncnn)
+
+cmake_minimum_required(VERSION 3.22.1)
+
+set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/opencv-mobile-X.X.X-android/sdk/native/jni)
+find_package(OpenCV REQUIRED core imgproc)
+
+set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20XXXXXX-android/${ANDROID_ABI}/lib/cmake/ncnn)
+find_package(ncnn REQUIRED)
+
+add_library(ncnntotal SHARED ncnn.cpp nanodet.cpp yolov8.cpp)
+target_link_libraries(ncnntotal ncnn ${OpenCV_LIBS} mediandk jnigraphics)
+```
+
 ### detection
 nanodet
 
