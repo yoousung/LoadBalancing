@@ -9,17 +9,26 @@ public class Ncnn {
                                     int modelid,
                                     int cpugpu);
 
+    // det + seg from blackbox
     public native boolean homoGen(ImageView imageView,
                                   Bitmap bitmap,
                                   boolean[] opt);
 
+    // det + seg from phone
+    public native boolean heteroGen(ImageView imageView,
+                                    Bitmap bitmap,
+                                    String dataDet,
+                                    Bitmap dataSeg);
+
+    // det from phone
     public native boolean heteroGenDet(ImageView imageView,
                                     Bitmap bitmap,
-                                    String data);
+                                    String dataDet);
 
+    // seg from phone
     public native boolean heteroGenSeg(ImageView imageView,
                                     Bitmap bitmap,
-                                    Bitmap data);
+                                    Bitmap dataSeg);
 
     static {
         System.loadLibrary("ncnntotal");

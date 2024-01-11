@@ -77,29 +77,29 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
 
         // TODO 동작설정
-        // 2-1) BBOX그리기
+        // 2-1) det
         if(device1_state.getText().equals("on") && device2_state.getText().equals("off")){
             String bboxdata = BboxDataHolder.getInstance().getBboxdata();
-            Log.e("CustomSurfaceListener", "BBOX : " + bboxdata);
+//            Log.e("CustomSurfaceListener", "BBOX : " + bboxdata);
             if(bboxdata!=null && bboxdata!=" "){
                 model.heteroGenDet(bdbox, newbitmap, bboxdata);
             }
         }
-        // 2-2) seg그리기
+        // 2-2) seg
         else if(device1_state.getText().equals("off") && device2_state.getText().equals("on")){
-
             Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
             if(segbitmap!=null){
                 model.heteroGenSeg(bdbox, newbitmap, segbitmap);
             }
         }
-        //TODO 여기부분 수정필요
-        // 2-3) bbox, seg 그리기
-//        else if(device1_state.getText().equals("on") && device2_state.getText().equals("on")){
-//            String bboxdata = BboxDataHolder.getInstance().getBboxdata();
-//            Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
-//            if(bboxdata!=null && bboxdata!=" " && segbitmap!=null){}
-//        }
+        // 2-3) det + seg
+        else if(device1_state.getText().equals("on") && device2_state.getText().equals("on")){
+            String bboxdata = BboxDataHolder.getInstance().getBboxdata();
+            Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
+            if(bboxdata!=null && !bboxdata.equals(" ") && segbitmap!=null){
+                model.heteroGen(bdbox, newbitmap, bboxdata, segbitmap);
+            }
+        }
 
 
 
