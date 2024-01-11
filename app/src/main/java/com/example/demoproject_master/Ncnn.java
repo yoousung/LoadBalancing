@@ -10,24 +10,14 @@ public class Ncnn {
                                     int cpugpu);
 
     // det + seg from blackbox
-    public native boolean homoGen(ImageView imageView,
+    public native boolean homogeneousComputing(ImageView imageView,
                                   Bitmap bitmap,
                                   boolean[] opt);
 
     // det + seg from phone
-    public native boolean heteroGen(ImageView imageView,
+    public native boolean heterogeneousComputing(ImageView imageView,
                                     Bitmap bitmap,
                                     String dataDet,
-                                    Bitmap dataSeg);
-
-    // det from phone
-    public native boolean heteroGenDet(ImageView imageView,
-                                    Bitmap bitmap,
-                                    String dataDet);
-
-    // seg from phone
-    public native boolean heteroGenSeg(ImageView imageView,
-                                    Bitmap bitmap,
                                     Bitmap dataSeg);
 
     static {

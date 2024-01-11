@@ -10,6 +10,8 @@ import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Objects;
+
 public class CustomSurfaceListener implements TextureView.SurfaceTextureListener {
 
     protected CameraHandler cameraHandler;
@@ -24,7 +26,12 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
     private TextView device1_state;
     private TextView device2_state;
 
-    public CustomSurfaceListener(CameraHandler cameraHandler, TextureView textureView, Ncnn model, boolean toggleSeg, boolean toggleDet, ImageView bdbox, TextView device1_state, TextView device2_state) {
+    public CustomSurfaceListener(CameraHandler cameraHandler,
+                                 TextureView textureView,
+                                 Ncnn model,
+                                 boolean toggleSeg, boolean toggleDet,
+                                 ImageView bdbox,
+                                 TextView device1_state, TextView device2_state) {
         this.cameraHandler = cameraHandler;
         this.textureView = textureView;
         this.model = model;
@@ -72,36 +79,28 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
                 }
             }, interval);
         }
-        model.homoGen(bdbox, currentbmp, opt);
-        Drawable drawable = bdbox.getDrawable();
-        Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
+        Bitmap newbitmap;
+        if (toggleDet | toggleSeg) {
+            model.homogeneousComputing(bdbox, currentbmp, opt);
+            Drawable drawable = bdbox.getDrawable();
+            newbitmap = ((BitmapDrawable) drawable).getBitmap();
+        }
+        else {
+            newbitmap = currentbmp;
+        }
 
         // TODO 동작설정
+        String bboxdata = null;
+        Bitmap segbitmap = null;
         // 2-1) det
-        if(device1_state.getText().equals("on") && device2_state.getText().equals("off")){
-            String bboxdata = BboxDataHolder.getInstance().getBboxdata();
-//            Log.e("CustomSurfaceListener", "BBOX : " + bboxdata);
-            if(bboxdata!=null && bboxdata!=" "){
-                model.heteroGenDet(bdbox, newbitmap, bboxdata);
-            }
-        }
+        if(device1_state.getText().equals("on"))
+            bboxdata = BboxDataHolder.getInstance().getBboxdata();
+        if(Objects.equals(bboxdata, " "))
+            bboxdata = null;
         // 2-2) seg
-        else if(device1_state.getText().equals("off") && device2_state.getText().equals("on")){
-            Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
-            if(segbitmap!=null){
-                model.heteroGenSeg(bdbox, newbitmap, segbitmap);
-            }
-        }
-        // 2-3) det + seg
-        else if(device1_state.getText().equals("on") && device2_state.getText().equals("on")){
-            String bboxdata = BboxDataHolder.getInstance().getBboxdata();
-            Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
-            if(bboxdata!=null && !bboxdata.equals(" ") && segbitmap!=null){
-                model.heteroGen(bdbox, newbitmap, bboxdata, segbitmap);
-            }
-        }
+        if(device2_state.getText().equals("on"))
+            segbitmap = SegDataHolder.getInstance().getSegdata();
 
-
-
+        model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
     }
 }

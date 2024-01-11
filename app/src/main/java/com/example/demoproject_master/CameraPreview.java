@@ -89,7 +89,7 @@ public class CameraPreview extends AppCompatActivity {
 
         reload();
 
-        // Device1 (BBOX)
+        // Device1 (DET)
         Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state));
         serverThread.start();
 
