@@ -27,10 +27,10 @@
                     android:text="Det"/>
 
                 <Button
-                    android:id="@+id/toggleNoneButton"
+                    android:id="@+id/exit_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="None"/>
+                    android:text="재시작"/>
 
                 <Button
                     android:id="@+id/btn_start"
