@@ -72,7 +72,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
                 }
             }, interval);
         }
-        model.predict(bdbox, currentbmp, opt);
+        model.homoGen(bdbox, currentbmp, opt);
         Drawable drawable = bdbox.getDrawable();
         Bitmap newbitmap = ((BitmapDrawable) drawable).getBitmap();
 
@@ -82,7 +82,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             String bboxdata = BboxDataHolder.getInstance().getBboxdata();
             Log.e("CustomSurfaceListener", "BBOX : " + bboxdata);
             if(bboxdata!=null && bboxdata!=" "){
-                model.draw_Bbox(bdbox, newbitmap, bboxdata);
+                model.heteroGenDet(bdbox, newbitmap, bboxdata);
             }
         }
         // 2-2) seg그리기
@@ -90,7 +90,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
 
             Bitmap segbitmap = SegDataHolder.getInstance().getSegdata();
             if(segbitmap!=null){
-                model.draw_Seg(bdbox, newbitmap, segbitmap);
+                model.heteroGenSeg(bdbox, newbitmap, segbitmap);
             }
         }
         //TODO 여기부분 수정필요

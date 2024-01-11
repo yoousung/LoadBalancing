@@ -12,8 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-// BBOX 소켓 통신
-// Device1 socket (BBOX)
+// DET 소켓 통신
+// Device1 socket (DET)
 public class ServerThread implements Runnable {
 
     private Handler uiHandler;

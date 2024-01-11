@@ -273,7 +273,6 @@ Java_com_example_demoproject_1master_Ncnn_heteroGenDet(JNIEnv *env,
              jobject bitmap,
              jstring data) {
 
-
     // RGB형식으로 변경
     AndroidBitmapInfo info;
     if (AndroidBitmap_getInfo(env, bitmap, &info) < 0)
@@ -330,7 +329,7 @@ Java_com_example_demoproject_1master_Ncnn_heteroGenDet(JNIEnv *env,
             objects.clear();
         }
 
-        draw_fps(rgb);
+//        draw_fps(rgb);
         // 자바로 반환환
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
@@ -368,7 +367,7 @@ Java_com_example_demoproject_1master_Ncnn_heteroGenSeg(JNIEnv *env,
     cv::Mat rgb;
     cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
 
-    cv::Mat rgba_(height, width, CV_8UC1, maskPixels);
+    cv::Mat rgba_(height, width, CV_8UC4, maskPixels);
     cv::Mat mask;
     cv::cvtColor(rgba_, mask, cv::COLOR_RGBA2GRAY);
 
@@ -411,243 +410,4 @@ Java_com_example_demoproject_1master_Ncnn_heteroGenSeg(JNIEnv *env,
     AndroidBitmap_unlockPixels(env, bitmap);
     return JNI_TRUE;
 }
-
-JNIEXPORT jboolean
-
-JNICALL
-Java_com_example_demoproject_1master_Ncnn_predict(JNIEnv *env,
-                                          jobject thiz,
-                                          jobject imageView,
-                                          jobject bitmap,
-                                          jbooleanArray opt) {
-
-// RGB형식으로 변경
-    AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        return JNI_FALSE;
-    }
-
-// Get the pointer to bitmap pixels
-    void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        return JNI_FALSE;
-    }
-
-// Create a cv::Mat from the bitmap data
-    int width = info.width;
-    int height = info.height;
-    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
-    cv::Mat rgb;
-    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
-
-    ncnn::MutexLockGuard g(lock);
-
-// Prediction
-    jsize size = env->GetArrayLength(opt);
-    std::vector<uint8_t> option(size);
-    env->GetBooleanArrayRegion(opt, 0, size, reinterpret_cast<jboolean *>(&option[0]));
-
-    //__android_log_print(ANDROID_LOG_DEBUG, "imgsize", "%dx%d", width, height);
-
-    if (g_yolo && g_nanodet) {
-        if (option[0] && option[1]) {
-            std::vector<Yolov8Object> objects1;
-            g_yolo->detect(rgb, objects1);
-            g_yolo->draw(rgb, objects1);
-
-            std::vector<NanoDetObject> objects2;
-            g_nanodet->detect(rgb, objects2);
-            g_nanodet->draw(rgb, objects2);
-        } else if (option[0]) {
-            std::vector<Yolov8Object> objects;
-            g_yolo->detect(rgb, objects);
-            g_yolo->draw(rgb, objects);
-        } else if (option[1]) {
-            std::vector<NanoDetObject> objects;
-            g_nanodet->detect(rgb, objects);
-            g_nanodet->draw(rgb, objects);
-        } else {
-
-        }
-
-// 이미지 뷰 업데이트 JNI 호출
-        jclass imageViewClass = env->GetObjectClass(imageView);
-        jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
-                                                          "setImageBitmap",
-                                                          "(Landroid/graphics/Bitmap;)V");
-
-        draw_fps(rgb);
-
-// 자바로 반환, imageView 나타내기
-        jobject jbitmap = MatToBitmap(env, rgb);
-        env->CallVoidMethod(imageView, setImageBitmapMethod, jbitmap);
-    } else {
-        draw_unsupported(rgb);
-    }
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-    return JNI_TRUE;
-}
-
-JNIEXPORT jboolean
-
-JNICALL
-Java_com_example_demoproject_1master_Ncnn_draw_1Bbox(JNIEnv *env,
-                                             jobject thiz,
-                                             jobject image_view,
-                                             jobject bitmap,
-                                             jstring data) {
-
-
-    // RGB형식으로 변경
-    AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
-        return JNI_FALSE;
-    }
-
-    // Get the pointer to bitmap pixels
-    void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-
-    // Create a cv::Mat from the bitmap data
-    int width = info.width;
-    int height = info.height;
-    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
-    cv::Mat rgb;
-    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
-
-    jclass imageViewClass = env->GetObjectClass(image_view);
-    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap",
-                                                      "(Landroid/graphics/Bitmap;)V");
-
-    ncnn::MutexLockGuard g(lock);
-
-    int index=0;
-
-    if (g_nanodet) {
-
-        const char *cstr = env->GetStringUTFChars(data, nullptr);
-
-        // 문자열을 Object로 반환
-        if (cstr != nullptr && cstr != " ") {
-            std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
-            env->ReleaseStringUTFChars(data, cstr); // 메모리 릴리스
-
-            std::vector<NanoDetObject> objects;
-            std::istringstream iss(bboxString);
-            __android_log_print(ANDROID_LOG_ERROR, "nanodet_receive", "BBOXS : %s\n",bboxString.c_str());
-            std::string token;
-            while (std::getline(iss, token, '/')) {
-                NanoDetObject obj;
-                sscanf(token.c_str(), "%d %f %f %f %f %f",
-                       &obj.label,
-                       &obj.prob,
-                       &obj.rect.x,
-                       &obj.rect.y,
-                       &obj.rect.width,
-                       &obj.rect.height);
-
-                objects.push_back(obj);
-            }
-            g_nanodet->drawbbox(rgb, objects, index);
-            objects.clear();
-        }
-        //draw_fps(rgb);
-        // 자바로 반환환
-        jobject jbitmap = MatToBitmap(env, rgb);
-        env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
-    }
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-    return JNI_TRUE;
-}
-
-
-JNIEXPORT jboolean JNICALL
-Java_com_example_demoproject_1master_Ncnn_draw_1Seg(JNIEnv *env, jobject thiz, jobject image_view,
-                                            jobject bitmap, jobject segbitmap) {
-    // RGB형식으로 변경
-    AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
-        return JNI_FALSE;
-    }
-
-    void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-    //================================================================
-    AndroidBitmapInfo info2;
-    if (AndroidBitmap_getInfo(env, segbitmap, &info2) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-
-    if (info2.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
-        return JNI_FALSE;
-    }
-
-    void *bitmapPixels2;
-    if (AndroidBitmap_lockPixels(env, segbitmap, &bitmapPixels2) < 0) {
-        // Error handling
-        return JNI_FALSE;
-    }
-    //==================================================================
-
-    // Create a cv::Mat from the bitmap data
-    int width = info.width;
-    int height = info.height;
-    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
-    cv::Mat rgb;
-    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
-
-    // SEG bitmap
-    int width2 = info2.width;
-    int height2 = info2.height;
-    cv::Mat rgba2(height2, width2, CV_8UC4, bitmapPixels2);
-    cv::Mat rgb2;
-    cv::cvtColor(rgba2, rgb2, cv::COLOR_RGBA2GRAY);
-
-    __android_log_print(ANDROID_LOG_ERROR, "ncnn" , "IMG : Height = %d, Width = %d\nSEG : Height = %d, Width = %d",height,width,height2,width2) ;
-
-    jclass imageViewClass = env->GetObjectClass(image_view);
-    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass, "setImageBitmap",
-                                                      "(Landroid/graphics/Bitmap;)V");
-
-    ncnn::MutexLockGuard g(lock);
-
-    if (g_yolo) {
-
-        g_yolo->drawseg(rgb, rgb2);
-
-        jobject jbitmap = MatToBitmap(env, rgb);
-        env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
-    }
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-    return JNI_TRUE;
-}
-
-
 }

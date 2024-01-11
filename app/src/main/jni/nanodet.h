@@ -37,8 +37,6 @@ public:
 
     int draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects);
 
-    int drawbbox(cv::Mat& rgb, const std::vector<NanoDetObject>& objects, int index);
-
 private:
     ncnn::Net nanodet;
     int target_size=320;

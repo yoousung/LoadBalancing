@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-// SEG데이터 소켓 통신
+// SEG 소켓 통신
 // Device2 socket (SEG)
 public class ServerThread2 implements Runnable {
 
