@@ -381,7 +381,8 @@ int Yolov8::load(AAssetManager* mgr, bool use_gpu)
 #if NCNN_VULKAN
     yolov8.opt.use_vulkan_compute = use_gpu;
 #endif
-    yolov8.opt.num_threads = ncnn::get_big_cpu_count();
+    //yolov8.opt.num_threads = ncnn::get_big_cpu_count();
+    yolov8.opt.num_threads = 1;
     yolov8.opt.blob_allocator = &blob_pool_allocator;
     yolov8.opt.workspace_allocator = &workspace_pool_allocator;
 

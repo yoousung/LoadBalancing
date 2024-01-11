@@ -267,31 +267,25 @@ Java_com_example_demoproject_1master_Ncnn_homoGen(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
+Java_com_example_demoproject_1master_Ncnn_heteroGenDet(JNIEnv *env,
              jobject thiz,
              jobject image_view,
              jobject bitmap,
              jstring data) {
 
-
     // RGB형식으로 변경
     AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        // Error handling
+    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0)
         return JNI_FALSE;
-    }
 
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        // Only support RGBA_8888 format, you may need to convert other formats
+    // Only support RGBA_8888 format, you may need to convert other formats
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
         return JNI_FALSE;
-    }
 
     // Get the pointer to bitmap pixels
     void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
-        // Error handling
+    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
         return JNI_FALSE;
-    }
 
     // Create a cv::Mat from the bitmap data
     int width = info.width;
@@ -317,7 +311,7 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
 
             std::vector<NanoDetObject> objects;
             std::istringstream iss(bboxString);
-            __android_log_print(ANDROID_LOG_ERROR, "nanodet_receive", "BBOXS : %s\n",bboxString.c_str());
+//            __android_log_print(ANDROID_LOG_ERROR, "nanodet_receive", "BBOXS : %s\n",bboxString.c_str());
             std::string token;
             while (std::getline(iss, token, '/')) {
                 NanoDetObject obj;
@@ -335,7 +329,7 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
             objects.clear();
         }
 
-        draw_fps(rgb);
+//        draw_fps(rgb);
         // 자바로 반환환
         jobject jbitmap = MatToBitmap(env, rgb);
         env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
@@ -345,4 +339,175 @@ Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
     return JNI_TRUE;
 }
 
+JNIEXPORT jboolean
+
+JNICALL
+Java_com_example_demoproject_1master_Ncnn_heteroGenSeg(JNIEnv *env,
+                                                    jobject thiz,
+                                                    jobject image_view,
+                                                    jobject bitmap,
+                                                    jobject data) {
+    AndroidBitmapInfo info;
+    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0)
+        return JNI_FALSE;
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
+        return JNI_FALSE;
+    void *bitmapPixels;
+    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
+        return JNI_FALSE;
+
+    void *maskPixels;
+    if (AndroidBitmap_lockPixels(env, data, &maskPixels) < 0)
+        return JNI_FALSE;
+
+    // Create a cv::Mat from the bitmap data
+    int width = info.width;
+    int height = info.height;
+    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
+    cv::Mat rgb;
+    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
+
+    cv::Mat rgba_(height, width, CV_8UC4, maskPixels);
+    cv::Mat mask;
+    cv::cvtColor(rgba_, mask, cv::COLOR_RGBA2GRAY);
+
+    jclass imageViewClass = env->GetObjectClass(image_view);
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
+                                                      "setImageBitmap",
+                                                      "(Landroid/graphics/Bitmap;)V");
+
+    ncnn::MutexLockGuard g(lock);
+
+    if (g_yolo) {
+
+        static const unsigned char colors[2][3] = {
+                {56,  0,   255},
+                {255, 0, 56},
+        };
+
+        const unsigned char* color;
+        for (int y = 0; y < rgb.rows; y++) {
+            uchar* image_ptr = rgb.ptr(y);
+            const auto* mask_ptr = mask.ptr<uchar>(y);
+            for (int x = 0; x < rgb.cols; x++) {
+                int mask_value = mask_ptr[x];
+                if (mask_value == 1 || mask_value == 2) {
+                    color = colors[mask_value - 1];
+                    image_ptr[0] = cv::saturate_cast<uchar>(image_ptr[0] * 0.5 + color[2] * 0.5);
+                    image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
+                    image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
+                }
+                image_ptr += 3;
+            }
+        }
+
+        // draw_fps(rgb);
+        // 자바로 반환환
+        jobject jbitmap = MatToBitmap(env, rgb);
+        env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
+    }
+
+    AndroidBitmap_unlockPixels(env, bitmap);
+    return JNI_TRUE;
+}
+
+JNIEXPORT jboolean
+
+JNICALL
+Java_com_example_demoproject_1master_Ncnn_heteroGen(JNIEnv *env,
+                                                    jobject thiz,
+                                                    jobject image_view,
+                                                    jobject bitmap,
+                                                    jstring datadet,
+                                                    jobject dataseg) {
+    AndroidBitmapInfo info;
+    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0)
+        return JNI_FALSE;
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
+        return JNI_FALSE;
+    void *bitmapPixels;
+    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
+        return JNI_FALSE;
+
+    void *maskPixels;
+    if (AndroidBitmap_lockPixels(env, dataseg, &maskPixels) < 0)
+        return JNI_FALSE;
+
+    // Create a cv::Mat from the bitmap data
+    int width = info.width;
+    int height = info.height;
+    cv::Mat rgba(height, width, CV_8UC4, bitmapPixels);
+    cv::Mat rgb;
+    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
+
+    cv::Mat rgba_(height, width, CV_8UC4, maskPixels);
+    cv::Mat mask;
+    cv::cvtColor(rgba_, mask, cv::COLOR_RGBA2GRAY);
+
+    jclass imageViewClass = env->GetObjectClass(image_view);
+    jmethodID setImageBitmapMethod = env->GetMethodID(imageViewClass,
+                                                      "setImageBitmap",
+                                                      "(Landroid/graphics/Bitmap;)V");
+
+    ncnn::MutexLockGuard g(lock);
+
+    if (g_nanodet && g_yolo) {
+
+        // detection
+        const char *cstr = env->GetStringUTFChars(datadet, nullptr);
+
+        // 문자열을 Object로 반환
+        if (cstr != nullptr && cstr != " ") {
+            std::string bboxString(cstr); // C 스타일 문자열을 C++의 std::string으로 복사
+            env->ReleaseStringUTFChars(datadet, cstr); // 메모리 릴리스
+
+            std::vector<NanoDetObject> objects;
+            std::istringstream iss(bboxString);
+            std::string token;
+            while (std::getline(iss, token, '/')) {
+                NanoDetObject obj;
+                sscanf(token.c_str(), "%d %f %f %f %f %f",
+                       &obj.label,
+                       &obj.prob,
+                       &obj.rect.x,
+                       &obj.rect.y,
+                       &obj.rect.width,
+                       &obj.rect.height);
+
+                objects.push_back(obj);
+            }
+            g_nanodet->draw(rgb, objects);
+            objects.clear();
+        }
+
+        // segmentation
+        static const unsigned char colors[2][3] = {
+                {56,  0,   255},
+                {255, 0, 56},
+        };
+
+        const unsigned char* color;
+        for (int y = 0; y < rgb.rows; y++) {
+            uchar* image_ptr = rgb.ptr(y);
+            const auto* mask_ptr = mask.ptr<uchar>(y);
+            for (int x = 0; x < rgb.cols; x++) {
+                int mask_value = mask_ptr[x];
+                if (mask_value == 1 || mask_value == 2) {
+                    color = colors[mask_value - 1];
+                    image_ptr[0] = cv::saturate_cast<uchar>(image_ptr[0] * 0.5 + color[2] * 0.5);
+                    image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
+                    image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
+                }
+                image_ptr += 3;
+            }
+        }
+
+        // 자바로 반환환
+        jobject jbitmap = MatToBitmap(env, rgb);
+        env->CallVoidMethod(image_view, setImageBitmapMethod, jbitmap);
+    }
+
+    AndroidBitmap_unlockPixels(env, bitmap);
+    return JNI_TRUE;
+}
 }

@@ -4,20 +4,31 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
-import java.util.ArrayList;
-
 public class Ncnn {
     public native boolean loadModel(AssetManager mgr,
                                     int modelid,
                                     int cpugpu);
 
+    // det + seg from blackbox
     public native boolean homoGen(ImageView imageView,
                                   Bitmap bitmap,
                                   boolean[] opt);
 
+    // det + seg from phone
     public native boolean heteroGen(ImageView imageView,
                                     Bitmap bitmap,
-                                    String data);
+                                    String dataDet,
+                                    Bitmap dataSeg);
+
+    // det from phone
+    public native boolean heteroGenDet(ImageView imageView,
+                                    Bitmap bitmap,
+                                    String dataDet);
+
+    // seg from phone
+    public native boolean heteroGenSeg(ImageView imageView,
+                                    Bitmap bitmap,
+                                    Bitmap dataSeg);
 
     static {
         System.loadLibrary("ncnntotal");
