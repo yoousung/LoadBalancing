@@ -54,24 +54,14 @@ public class MainActivity extends AppCompatActivity {
         device_switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
-                    device1_state = true;
-                }
-                else{
-                    device1_state = false;
-                }
+                device1_state = isChecked;
             }
         });
 
         device_switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
-                    device2_state = true;
-                }
-                else{
-                    device2_state = false;
-                }
+                device2_state = isChecked;
             }
         });
 

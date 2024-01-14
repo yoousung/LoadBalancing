@@ -194,21 +194,13 @@ Java_com_example_demoproject_1master_Ncnn_homogeneousComputing(JNIEnv *env,
                   jobject bitmap,
                   jbooleanArray opt) {
 
-// RGB형식으로 변경
     AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0) {
-        return JNI_FALSE;
-    }
-
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        return JNI_FALSE;
-    }
-
-// Get the pointer to bitmap pixels
     void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0) {
+    if (AndroidBitmap_getInfo(env,
+                              bitmap, &info) < 0 ||
+                              info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+                              AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
         return JNI_FALSE;
-    }
 
 // Create a cv::Mat from the bitmap data
     int width = info.width;
@@ -226,9 +218,9 @@ Java_com_example_demoproject_1master_Ncnn_homogeneousComputing(JNIEnv *env,
 
     if (g_yolo && g_nanodet) {
         if (option[0]) {
-            std::vector<Yolov8Object> objects;
-            g_yolo->detect(rgb, objects);
-            g_yolo->draw(rgb, objects);
+            cv::Mat mask = cv::Mat::zeros(cv::Size(rgb.cols, rgb.rows), CV_8UC1);
+            g_yolo->detect(rgb, mask);
+            g_yolo->draw(rgb, mask);
         }
         if (option[1]) {
             std::vector<NanoDetObject> objects;
@@ -266,12 +258,11 @@ Java_com_example_demoproject_1master_Ncnn_heterogeneousComputing(JNIEnv *env,
                                                     jstring datadet,
                                                     jobject dataseg) {
     AndroidBitmapInfo info;
-    if (AndroidBitmap_getInfo(env, bitmap, &info) < 0)
-        return JNI_FALSE;
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888)
-        return JNI_FALSE;
     void *bitmapPixels;
-    if (AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
+    if (AndroidBitmap_getInfo(env,
+                              bitmap, &info) < 0 ||
+                              info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+                              AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels) < 0)
         return JNI_FALSE;
 
 
@@ -324,29 +315,7 @@ Java_com_example_demoproject_1master_Ncnn_heterogeneousComputing(JNIEnv *env,
             cv::Mat mask;
             cv::cvtColor(rgba_, mask, cv::COLOR_RGBA2GRAY);
 
-            static const unsigned char colors[2][3] = {
-                    {56,  0, 255},
-                    {255, 0, 56},
-            };
-
-            const unsigned char *color;
-            for (int y = 0; y < rgb.rows; y++) {
-                uchar *image_ptr = rgb.ptr(y);
-                const auto *mask_ptr = mask.ptr<uchar>(y);
-                for (int x = 0; x < rgb.cols; x++) {
-                    int mask_value = mask_ptr[x];
-                    if (mask_value == 1 || mask_value == 2) {
-                        color = colors[mask_value - 1];
-                        image_ptr[0] = cv::saturate_cast<uchar>(
-                                image_ptr[0] * 0.5 + color[2] * 0.5);
-                        image_ptr[1] = cv::saturate_cast<uchar>(
-                                image_ptr[1] * 0.5 + color[1] * 0.5);
-                        image_ptr[2] = cv::saturate_cast<uchar>(
-                                image_ptr[2] * 0.5 + color[0] * 0.5);
-                    }
-                    image_ptr += 3;
-                }
-            }
+            g_yolo->draw(rgb, mask);
             rgba_.release();
             mask.release();
         }
