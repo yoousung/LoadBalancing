@@ -1,6 +1,7 @@
 package com.example.demoproject_master;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.DhcpInfo;
@@ -26,20 +27,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView device1_ip;
-    private TextView device2_ip;
-    private TextView connectedDevices;
-    private Button scanButton;
-    private Button cameraButton;
-    private Button exitButton;
-    private LinearLayout linearLayout_Device1;
-    private LinearLayout linearLayout_Device2;
-    private Switch device_switch1;
-    private Switch device_switch2;
+    private TextView device1_ip, device2_ip, connectedDevices;
+    private Button scanButton, cameraButton, exitButton;
+    private LinearLayout linearLayout_Device1, linearLayout_Device2;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private Switch device_switch1, device_switch2;
 
     //private ArrayList<String> ip_list;
-    private boolean device1_state; // Device1 선택 판정
-    private boolean device2_state; // Device2 선택 판정
+    private boolean device1_state, device2_state; // Device 선택 판정
     private int case_index;
     private String ip_data;
     private CameraPreview cameraPreview;
@@ -150,58 +145,47 @@ public class MainActivity extends AppCompatActivity {
 
 
     // 핫스팟에 연결된 Device와 IP
+    @SuppressLint("SetTextI18n")
     private void view_connect_device(){
         ArrayList<String> ip_list = new ArrayList<>();
         String ipList = getConnectedDevices();
         String[] list = ipList.split("\n"); // 추출한 ip분리
+        int deviceLength = list.length;
         ip_data = null;
 
-        // 연결된 Device가 없을 때
-        if (list.length <= 1) {
+        if (deviceLength == 0) {
             connectedDevices.setText("No devices connected.");
-            System.out.println("No devices connected.");
-            linearLayout_Device1.setVisibility(View.INVISIBLE); // 뷰 숨기기
-            linearLayout_Device2.setVisibility(View.INVISIBLE);
-            device_switch1.setVisibility(View.INVISIBLE);
-            device_switch2.setVisibility(View.INVISIBLE);
-        } 
-        // 연결된 Device가 1개 이상일 때
-        else 
-            {
+        }
+        else {
             connectedDevices.setText(ipList);
             String[] ip_list_buff;
 
-            for(int index = 1; index < list.length; index++){
+            for(int index = 1; index < deviceLength; index++){
                 ip_list_buff = list[index].split(" ");
                 ip_list.add(ip_list_buff[3]);
             }
-
-            switch (list.length){
-                
-                // Device가 1개 연결되었을 때
+            switch (deviceLength){
                 case 2:
-                    linearLayout_Device1.setVisibility(View.VISIBLE); // 뷰 숨기기
-                    device_switch1.setVisibility(View.VISIBLE);
-                    device1_ip.setText(ip_list.get(0));
-                    ip_data = ip_list.get(0);
-
+                    showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
                     break;
-                    
-                // Device가 2개 연결되었을 때
                 case 3:
-                    linearLayout_Device1.setVisibility(View.VISIBLE); // 뷰 숨기기
-                    linearLayout_Device2.setVisibility(View.VISIBLE);
-                    device_switch1.setVisibility(View.VISIBLE);
-                    device_switch2.setVisibility(View.VISIBLE);
-
-                    device1_ip.setText(ip_list.get(0));
-                    device2_ip.setText(ip_list.get(1));
-                    ip_data = ip_list.get(0)+" "+ip_list.get(1);
-
+                    showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
+                    showDeviceView(linearLayout_Device2, device_switch2, device2_ip, ip_list.get(1));
                     break;
             }
         }
     }
+
+    private void showDeviceView(LinearLayout layout,
+                                @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchView,
+                                TextView ipTextView,
+                                String ipAddress) {
+        layout.setVisibility(View.VISIBLE);
+        switchView.setVisibility(View.VISIBLE);
+        ipTextView.setText(ipAddress);
+        new Thread(new SocketThread(ipAddress)).start();
+    }
+
 
     // TedPermission 권한 체크
     private void setPermission() {
