@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -151,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         String ipList = getConnectedDevices();
         String[] list = ipList.split("\n"); // 추출한 ip분리
         int deviceLength = list.length;
-        ip_data = null;
 
         if (deviceLength == 0) {
             connectedDevices.setText("No devices connected.");
@@ -160,15 +160,15 @@ public class MainActivity extends AppCompatActivity {
             connectedDevices.setText(ipList);
             String[] ip_list_buff;
 
-            for(int index = 1; index < deviceLength; index++){
-                ip_list_buff = list[index].split(" ");
+            for (String s : list) {
+                ip_list_buff = s.split(" ");
                 ip_list.add(ip_list_buff[3]);
             }
             switch (deviceLength){
-                case 2:
+                case 1:
                     showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
                     break;
-                case 3:
+                case 2:
                     showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
                     showDeviceView(linearLayout_Device2, device_switch2, device2_ip, ip_list.get(1));
                     break;
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] parts = line.split(" +");
 
                 // 포맷 확인
-                if (parts.length < 4) {
+                if (Objects.equals(parts[0], "IP")) {
                     continue;
                 }
 
