@@ -22,7 +22,7 @@ public class SocketThread implements Runnable {
     @Override
     public void run() {
         try {
-            //Log.e("Stream", "Start Stream");
+            Log.e("Stream", serverIp);
             Socket clientSocket = new Socket(serverIp, 1357);
 
             // Send image to server

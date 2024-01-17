@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -148,22 +149,18 @@ public class MainActivity extends AppCompatActivity {
     // 핫스팟에 연결된 Device와 IP
     @SuppressLint("SetTextI18n")
     private void view_connect_device(){
-        ArrayList<String> ip_list = new ArrayList<>();
-        String ipList = getConnectedDevices();
-        String[] list = ipList.split("\n"); // 추출한 ip분리
-        int deviceLength = list.length;
+        ArrayList<String> ip_list = getConnectedDevices();
+        int deviceLength = ip_list.size();
 
         if (deviceLength == 0) {
             connectedDevices.setText("No devices connected.");
         }
         else {
-            connectedDevices.setText(ipList);
-            String[] ip_list_buff;
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String s : ip_list)
+                stringBuilder.append("Connected Device IP: ").append(s).append("\n");
+            connectedDevices.setText(stringBuilder.toString());
 
-            for (String s : list) {
-                ip_list_buff = s.split(" ");
-                ip_list.add(ip_list_buff[3]);
-            }
             switch (deviceLength){
                 case 1:
                     showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
@@ -211,8 +208,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 핫스팟으로 연결된 핸드폰의 IP주소
-    private String getConnectedDevices() {
-        StringBuilder ipList = new StringBuilder();
+    private ArrayList<String> getConnectedDevices() {
+        ArrayList<String> ip_list = new ArrayList<>();
 
         try {
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -226,21 +223,19 @@ public class MainActivity extends AppCompatActivity {
                 String[] parts = line.split(" +");
 
                 // 포맷 확인
-                if (Objects.equals(parts[0], "IP")) {
+                if (Objects.equals(parts[0], "IP"))
                     continue;
-                }
 
                 // 필요한 정보: IP 주소와 상태
                 String ip = parts[0];
                 String deviceStatus = parts[3];
 
                 // 현재 호스트 디바이스 IP 확인
-                if (ip.equalsIgnoreCase(ipAddress.getHostAddress())) {
+                if (ip.equalsIgnoreCase(ipAddress.getHostAddress()))
                     continue;
-                }
 
                 if (!deviceStatus.equalsIgnoreCase("0x0")) {
-                    ipList.append("Connected Device IP: ").append(ip).append("\n");
+                    ip_list.add(ip);
                 }
             }
 
@@ -248,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return ipList.toString();
+        return ip_list;
     }
     private InetAddress intToInetAddress(int hostAddress) {
         byte[] addressBytes = {(byte) (0xff & hostAddress), (byte) (0xff & (hostAddress >> 8)), (byte) (0xff & (hostAddress >> 16)), (byte) (0xff & (hostAddress >> 24))};
