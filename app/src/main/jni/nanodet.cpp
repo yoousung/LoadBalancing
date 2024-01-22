@@ -366,51 +366,11 @@ int NanoDet::detect(const cv::Mat& rgb, std::vector<NanoDetObject>& objects, flo
 }
 
 int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects) {
-    static const char *class_names[] = {
-            "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
-            "traffic light",
-            "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse",
-            "sheep", "cow",
-            "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie",
-            "suitcase", "frisbee",
-            "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
-            "skateboard", "surfboard",
-            "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
-            "banana", "apple",
-            "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
-            "chair", "couch",
-            "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote",
-            "keyboard", "cell phone",
-            "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-            "scissors", "teddy bear",
-            "hair drier", "toothbrush"
-    };
-
-    static const unsigned char colors[19][3] = {
-            {54,  67,  244},
-            {99,  30,  233},
-            {176, 39,  156},
-            {183, 58,  103},
-            {181, 81,  63},
-            {243, 150, 33},
-            {244, 169, 3},
-            {212, 188, 0},
-            {136, 150, 0},
-            {80,  175, 76},
-            {74,  195, 139},
-            {57,  220, 205},
-            {59,  235, 255},
-            {7,   193, 255},
-            {0,   152, 255},
-            {34,  87,  255},
-            {72,  85,  121},
-            {158, 158, 158},
-            {139, 125, 96}
-    };
-
-    std::vector<float> dists;
+    bool warning = false;
+    std::vector<cv::Point2f> srcPoints, dstPoints;
     cv::Point center = cv::Point(static_cast<int>(rgb.cols / 2), static_cast<int>(rgb.rows));
     cv::circle(rgb, center, 2, cv::Scalar(255, 255, 255), 10);
+    srcPoints.push_back(center);
     for (const auto &obj: objects) {
         if (obj.label == 0 || obj.label == 2 || obj.label == 5 || obj.label == 7 ||
             obj.label == 9) {
@@ -441,12 +401,7 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects) {
             cv::Point dot = cv::Point((int) ((obj.rect.x + obj.rect.width / 2)),
                                       (int) ((obj.rect.y * 5 + obj.rect.height * 4) / 5));
             cv::circle(rgb, dot, 2, cc, 10);
-
-            float dist = std::sqrt(std::pow(center.x - dot.x, 2) + std::pow(center.y - dot.y, 2));
-            dists.push_back(dist);
-
-            std::ostringstream oss;
-            oss << std::fixed << std::setprecision(2) << dist;
+            srcPoints.push_back(dot);
 
             // label
             cv::Scalar textcc = (color[0] + color[1] + color[2] >= 381) ? cv::Scalar(0, 0, 0)
@@ -454,30 +409,38 @@ int NanoDet::draw(cv::Mat& rgb, const std::vector<NanoDetObject>& objects) {
             cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX,
                         0.5, textcc, 1);
 
-            // distance
-            dot = cv::Point((int) (dot.x + 10), (int) (dot.y));
-            cv::putText(rgb, oss.str(), dot, cv::FONT_HERSHEY_SIMPLEX, 0.5, cc, 2);
         }
     }
-    bool warning = false;
-    for (const auto &dist: dists) {
+
+    cv::perspectiveTransform(srcPoints, dstPoints, M);
+    for (size_t i = 1; i < srcPoints.size(); ++i) {
+        const unsigned char *color = colors[objects[i-1].label];
+        cv::Scalar cc(color[0], color[1], color[2]);
+
+        float dist = std::sqrt(std::pow(dstPoints[0].x - dstPoints[i].x, 2) + std::pow(dstPoints[0].y - dstPoints[i].y, 2));
         if (dist < 60)
             warning = true;
-        if (warning) {
-            char text[256] = "Forward Collision Warning";
 
-            cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, 0);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << dist;
+        srcPoints[i] = cv::Point((int) (srcPoints[i].x + 10), (int) (srcPoints[i].y));
+        cv::putText(rgb, oss.str(), srcPoints[i], cv::FONT_HERSHEY_SIMPLEX, 0.5, cc, 2);
+    }
 
-            int x = static_cast<int>((rgb.cols - label_size.width) / 2);
-            int y = static_cast<int>(rgb.rows * 2 / 10);
-            cv::rectangle(rgb,
-                          cv::Rect(cv::Point(x, y),
-                                   cv::Size(label_size.width, label_size.height + 6)),
-                          cv::Scalar(255, 0, 0), -1);
+    if (warning) {
+        char text[256] = "Forward Collision Warning";
 
-            cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX,
-                        0.5, cv::Scalar(255, 255, 255));
-        }
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, 0);
+
+        int x = static_cast<int>((rgb.cols - label_size.width) / 2);
+        int y = static_cast<int>(rgb.rows * 2 / 10);
+        cv::rectangle(rgb,
+                      cv::Rect(cv::Point(x, y),
+                               cv::Size(label_size.width, label_size.height + 6)),
+                      cv::Scalar(255, 0, 0), -1);
+
+        cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX,
+                    0.5, cv::Scalar(255, 255, 255));
     }
 
     return 0;
