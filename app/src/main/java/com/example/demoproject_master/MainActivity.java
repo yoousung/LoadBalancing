@@ -28,18 +28,14 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-
-    private TextView device1_ip, device2_ip, connectedDevices;
-    private Button scanButton, cameraButton, exitButton;
-    private LinearLayout linearLayout_Device1, linearLayout_Device2;
-    @SuppressLint("UseSwitchCompatOrMaterialCode")
-    private Switch device_switch1, device_switch2;
-
-    //private ArrayList<String> ip_list;
+    private List<LinearLayout> linearLayoutDevices = new ArrayList<>();
+    private List<Switch> deviceSwitches = new ArrayList<>();
+    private List<TextView> deviceIps = new ArrayList<>();
     private boolean device1_state, device2_state; // Device 선택 판정
+    private TextView connectedDevices;
+    private Button scanButton, cameraButton, exitButton;
     private int case_index;
     private String ip_data;
-    private CameraPreview cameraPreview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,14 +44,14 @@ public class MainActivity extends AppCompatActivity {
         setPermission();
         initViews();
         // 전송할 Device선택
-        device_switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        deviceSwitches.get(0).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 device1_state = isChecked;
             }
         });
 
-        device_switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        deviceSwitches.get(1).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 device2_state = isChecked;
@@ -98,20 +94,27 @@ public class MainActivity extends AppCompatActivity {
 
     // View초기설정
     private void initViews(){
-        device1_ip = findViewById(R.id.connect_Device1);
-        device2_ip = findViewById(R.id.connect_Device2);
         connectedDevices = findViewById(R.id.connectedDevices);
         scanButton = findViewById(R.id.scan_button);
         cameraButton = findViewById(R.id.camera_button);
         exitButton = findViewById(R.id.exit_button);
-        linearLayout_Device1 = findViewById(R.id.linearlayout_device1);
-        linearLayout_Device2 = findViewById(R.id.linearlayout_device2);
-        device_switch1 = findViewById(R.id.device_switch1);
-        device_switch2 = findViewById(R.id.device_switch2);
-        linearLayout_Device1.setVisibility(View.GONE); // 뷰 숨기기
-        linearLayout_Device2.setVisibility(View.GONE);
-        device_switch1.setVisibility(View.GONE);
-        device_switch2.setVisibility(View.GONE);
+
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device1));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
+
+        deviceSwitches.add(findViewById(R.id.device_switch1));
+        deviceSwitches.add(findViewById(R.id.device_switch2));
+        deviceSwitches.add(findViewById(R.id.device_switch3));
+
+        deviceIps.add(findViewById(R.id.connect_Device1));
+        deviceIps.add(findViewById(R.id.connect_Device2));
+        deviceIps.add(findViewById(R.id.connect_Device3));
+
+        for (LinearLayout linearLayout : linearLayoutDevices)
+            linearLayout.setVisibility(View.GONE);
+        for (Switch deviceSwitch : deviceSwitches)
+            deviceSwitch.setVisibility(View.GONE);
     }
 
     // 통신 설정 : 4가지 case, Device1 = on/off, Device2 = on/off
@@ -148,28 +151,19 @@ public class MainActivity extends AppCompatActivity {
 
     // 핫스팟에 연결된 Device와 IP
     @SuppressLint("SetTextI18n")
-    private void view_connect_device(){
+    private void view_connect_device() {
         ArrayList<String> ip_list = getConnectedDevices();
         int deviceLength = ip_list.size();
 
-        if (deviceLength == 0) {
+        if (deviceLength == 0)
             connectedDevices.setText("No devices connected.");
-        }
         else {
             StringBuilder stringBuilder = new StringBuilder();
-            for (String s : ip_list)
-                stringBuilder.append("Connected Device IP: ").append(s).append("\n");
-            connectedDevices.setText(stringBuilder.toString());
-
-            switch (deviceLength){
-                case 1:
-                    showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
-                    break;
-                case 2:
-                    showDeviceView(linearLayout_Device1, device_switch1, device1_ip, ip_list.get(0));
-                    showDeviceView(linearLayout_Device2, device_switch2, device2_ip, ip_list.get(1));
-                    break;
+            for (int i = 0; i < deviceLength; i++) {
+                stringBuilder.append("Connected Device IP: ").append(ip_list.get(i)).append("\n");
+                showDeviceView(linearLayoutDevices.get(i), deviceSwitches.get(i), deviceIps.get(i), ip_list.get(i));
             }
+            connectedDevices.setText(stringBuilder.toString());
         }
     }
 

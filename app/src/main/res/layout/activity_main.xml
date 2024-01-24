@@ -111,6 +111,26 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/linearlayout_device3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Device3 IP : "
+                        android:textSize="25dp" />
+
+                    <TextView
+                        android:id="@+id/connect_Device3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="..."
+                        android:textSize="25dp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/exit"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -147,6 +167,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="25dp"/>
+
+                <Switch
+                    android:id="@+id/device_switch3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="25dp" />
             </LinearLayout>
 
         </LinearLayout>
