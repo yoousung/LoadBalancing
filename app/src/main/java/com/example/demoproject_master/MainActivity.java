@@ -33,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private List<TextView> deviceIps = new ArrayList<>();
     private boolean device1_state, device2_state; // Device 선택 판정
     private TextView connectedDevices;
-    private Button scanButton, cameraButton, exitButton;
+    private Button scanButton, cameraButton;
+//    private Button exitButton;
     private int case_index;
     private String ip_data;
     @Override
@@ -76,20 +77,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 재시작 버튼 클릭시 -> 앱 재시작
-        exitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 앱 종료
-                finishAffinity();
-
-                // 앱 재시작
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-        });
+//        // 재시작 버튼 클릭시 -> 앱 재시작
+//        exitButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // 앱 종료
+//                finishAffinity();
+//
+//                // 앱 재시작
+//                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
+//            }
+//        });
     }
 
     // View초기설정
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         connectedDevices = findViewById(R.id.connectedDevices);
         scanButton = findViewById(R.id.scan_button);
         cameraButton = findViewById(R.id.camera_button);
-        exitButton = findViewById(R.id.exit_button);
+//        exitButton = findViewById(R.id.exit_button);
 
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device1));
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
