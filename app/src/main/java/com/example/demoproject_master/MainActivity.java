@@ -221,8 +221,6 @@ public class MainActivity extends AppCompatActivity {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(" +");
 
-                Log.e("ipip", Arrays.toString(parts));
-
                 // 포맷 확인
                 if (Objects.equals(parts[0], "IP"))
                     continue;
