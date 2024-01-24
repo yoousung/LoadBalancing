@@ -152,6 +152,11 @@ public class MainActivity extends AppCompatActivity {
     // 핫스팟에 연결된 Device와 IP
     @SuppressLint("SetTextI18n")
     private void view_connect_device() {
+        for (LinearLayout linearLayout : linearLayoutDevices)
+            linearLayout.setVisibility(View.GONE);
+        for (Switch deviceSwitch : deviceSwitches)
+            deviceSwitch.setVisibility(View.GONE);
+
         ArrayList<String> ip_list = getConnectedDevices();
         int deviceLength = ip_list.size();
 
@@ -216,13 +221,15 @@ public class MainActivity extends AppCompatActivity {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(" +");
 
+                Log.e("ipip", Arrays.toString(parts));
+
                 // 포맷 확인
                 if (Objects.equals(parts[0], "IP"))
                     continue;
 
                 // 필요한 정보: IP 주소와 상태
                 String ip = parts[0];
-                String deviceStatus = parts[3];
+                String deviceStatus = parts[2];
 
                 // 현재 호스트 디바이스 IP 확인
                 if (ip.equalsIgnoreCase(ipAddress.getHostAddress()))
