@@ -1,6 +1,7 @@
 package com.example.demoproject_master;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.DhcpInfo;
@@ -22,27 +23,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-
-    private TextView device1_ip;
-    private TextView device2_ip;
+    private List<LinearLayout> linearLayoutDevices = new ArrayList<>();
+    private List<Switch> deviceSwitches = new ArrayList<>();
+    private List<TextView> deviceIps = new ArrayList<>();
+    private boolean device1_state, device2_state; // Device 선택 판정
     private TextView connectedDevices;
-    private Button scanButton;
-    private Button cameraButton;
-    private Button exitButton;
-    private LinearLayout linearLayout_Device1;
-    private LinearLayout linearLayout_Device2;
-    private Switch device_switch1;
-    private Switch device_switch2;
-
-    //private ArrayList<String> ip_list;
-    private boolean device1_state; // Device1 선택 판정
-    private boolean device2_state; // Device2 선택 판정
+    private Button scanButton, cameraButton;
+//    private Button exitButton;
     private int case_index;
     private String ip_data;
-    private CameraPreview cameraPreview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,14 +45,14 @@ public class MainActivity extends AppCompatActivity {
         setPermission();
         initViews();
         // 전송할 Device선택
-        device_switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        deviceSwitches.get(0).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 device1_state = isChecked;
             }
         });
 
-        device_switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        deviceSwitches.get(1).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 device2_state = isChecked;
@@ -83,38 +77,45 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 재시작 버튼 클릭시 -> 앱 재시작
-        exitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 앱 종료
-                finishAffinity();
-
-                // 앱 재시작
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-        });
+//        // 재시작 버튼 클릭시 -> 앱 재시작
+//        exitButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // 앱 종료
+//                finishAffinity();
+//
+//                // 앱 재시작
+//                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
+//            }
+//        });
     }
 
     // View초기설정
     private void initViews(){
-        device1_ip = findViewById(R.id.connect_Device1);
-        device2_ip = findViewById(R.id.connect_Device2);
         connectedDevices = findViewById(R.id.connectedDevices);
         scanButton = findViewById(R.id.scan_button);
         cameraButton = findViewById(R.id.camera_button);
-        exitButton = findViewById(R.id.exit_button);
-        linearLayout_Device1 = findViewById(R.id.linearlayout_device1);
-        linearLayout_Device2 = findViewById(R.id.linearlayout_device2);
-        device_switch1 = findViewById(R.id.device_switch1);
-        device_switch2 = findViewById(R.id.device_switch2);
-        linearLayout_Device1.setVisibility(View.GONE); // 뷰 숨기기
-        linearLayout_Device2.setVisibility(View.GONE);
-        device_switch1.setVisibility(View.GONE);
-        device_switch2.setVisibility(View.GONE);
+//        exitButton = findViewById(R.id.exit_button);
+
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device1));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
+
+        deviceSwitches.add(findViewById(R.id.device_switch1));
+        deviceSwitches.add(findViewById(R.id.device_switch2));
+        deviceSwitches.add(findViewById(R.id.device_switch3));
+
+        deviceIps.add(findViewById(R.id.connect_Device1));
+        deviceIps.add(findViewById(R.id.connect_Device2));
+        deviceIps.add(findViewById(R.id.connect_Device3));
+
+        for (LinearLayout linearLayout : linearLayoutDevices)
+            linearLayout.setVisibility(View.GONE);
+        for (Switch deviceSwitch : deviceSwitches)
+            deviceSwitch.setVisibility(View.GONE);
     }
 
     // 통신 설정 : 4가지 case, Device1 = on/off, Device2 = on/off
@@ -150,58 +151,38 @@ public class MainActivity extends AppCompatActivity {
 
 
     // 핫스팟에 연결된 Device와 IP
-    private void view_connect_device(){
-        ArrayList<String> ip_list = new ArrayList<>();
-        String ipList = getConnectedDevices();
-        String[] list = ipList.split("\n"); // 추출한 ip분리
-        ip_data = null;
+    @SuppressLint("SetTextI18n")
+    private void view_connect_device() {
+        for (LinearLayout linearLayout : linearLayoutDevices)
+            linearLayout.setVisibility(View.GONE);
+        for (Switch deviceSwitch : deviceSwitches)
+            deviceSwitch.setVisibility(View.GONE);
 
-        // 연결된 Device가 없을 때
-        if (list.length <= 1) {
+        ArrayList<String> ip_list = getConnectedDevices();
+        int deviceLength = ip_list.size();
+
+        if (deviceLength == 0)
             connectedDevices.setText("No devices connected.");
-            System.out.println("No devices connected.");
-            linearLayout_Device1.setVisibility(View.INVISIBLE); // 뷰 숨기기
-            linearLayout_Device2.setVisibility(View.INVISIBLE);
-            device_switch1.setVisibility(View.INVISIBLE);
-            device_switch2.setVisibility(View.INVISIBLE);
-        } 
-        // 연결된 Device가 1개 이상일 때
-        else 
-            {
-            connectedDevices.setText(ipList);
-            String[] ip_list_buff;
-
-            for(int index = 1; index < list.length; index++){
-                ip_list_buff = list[index].split(" ");
-                ip_list.add(ip_list_buff[3]);
+        else {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < deviceLength; i++) {
+                stringBuilder.append("Connected Device IP: ").append(ip_list.get(i)).append("\n");
+                showDeviceView(linearLayoutDevices.get(i), deviceSwitches.get(i), deviceIps.get(i), ip_list.get(i));
             }
-
-            switch (list.length){
-                
-                // Device가 1개 연결되었을 때
-                case 2:
-                    linearLayout_Device1.setVisibility(View.VISIBLE); // 뷰 숨기기
-                    device_switch1.setVisibility(View.VISIBLE);
-                    device1_ip.setText(ip_list.get(0));
-                    ip_data = ip_list.get(0);
-
-                    break;
-                    
-                // Device가 2개 연결되었을 때
-                case 3:
-                    linearLayout_Device1.setVisibility(View.VISIBLE); // 뷰 숨기기
-                    linearLayout_Device2.setVisibility(View.VISIBLE);
-                    device_switch1.setVisibility(View.VISIBLE);
-                    device_switch2.setVisibility(View.VISIBLE);
-
-                    device1_ip.setText(ip_list.get(0));
-                    device2_ip.setText(ip_list.get(1));
-                    ip_data = ip_list.get(0)+" "+ip_list.get(1);
-
-                    break;
-            }
+            connectedDevices.setText(stringBuilder.toString());
         }
     }
+
+    private void showDeviceView(LinearLayout layout,
+                                @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchView,
+                                TextView ipTextView,
+                                String ipAddress) {
+        layout.setVisibility(View.VISIBLE);
+        switchView.setVisibility(View.VISIBLE);
+        ipTextView.setText(ipAddress);
+        new Thread(new SocketThread(ipAddress)).start();
+    }
+
 
     // TedPermission 권한 체크
     private void setPermission() {
@@ -227,8 +208,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 핫스팟으로 연결된 핸드폰의 IP주소
-    private String getConnectedDevices() {
-        StringBuilder ipList = new StringBuilder();
+    private ArrayList<String> getConnectedDevices() {
+        ArrayList<String> ip_list = new ArrayList<>();
 
         try {
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -242,21 +223,19 @@ public class MainActivity extends AppCompatActivity {
                 String[] parts = line.split(" +");
 
                 // 포맷 확인
-                if (parts.length < 4) {
+                if (Objects.equals(parts[0], "IP"))
                     continue;
-                }
 
                 // 필요한 정보: IP 주소와 상태
                 String ip = parts[0];
-                String deviceStatus = parts[3];
+                String deviceStatus = parts[2];
 
                 // 현재 호스트 디바이스 IP 확인
-                if (ip.equalsIgnoreCase(ipAddress.getHostAddress())) {
+                if (ip.equalsIgnoreCase(ipAddress.getHostAddress()))
                     continue;
-                }
 
                 if (!deviceStatus.equalsIgnoreCase("0x0")) {
-                    ipList.append("Connected Device IP: ").append(ip).append("\n");
+                    ip_list.add(ip);
                 }
             }
 
@@ -264,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return ipList.toString();
+        return ip_list;
     }
     private InetAddress intToInetAddress(int hostAddress) {
         byte[] addressBytes = {(byte) (0xff & hostAddress), (byte) (0xff & (hostAddress >> 8)), (byte) (0xff & (hostAddress >> 16)), (byte) (0xff & (hostAddress >> 24))};
