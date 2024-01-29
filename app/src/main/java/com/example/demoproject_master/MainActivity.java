@@ -73,7 +73,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 set_socket();
-                start_CameraPreviewActivity(case_index, ip_data);
+                if(case_index==0){
+                    Toast.makeText(getApplicationContext(), "No device available", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    start_CameraPreviewActivity(case_index, ip_data);
+                }
             }
         });
 
@@ -180,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         layout.setVisibility(View.VISIBLE);
         switchView.setVisibility(View.VISIBLE);
         ipTextView.setText(ipAddress);
-        new Thread(new SocketThread(ipAddress)).start();
+        ip_data = ipAddress;
     }
 
 
