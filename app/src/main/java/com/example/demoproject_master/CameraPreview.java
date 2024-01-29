@@ -70,6 +70,16 @@ public class CameraPreview extends AppCompatActivity {
             }
         }
     };
+
+    private void setupCustomSurfaceListener() {
+        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
+                cameraHandler,
+                textureView,
+                model,
+                toggleSeg, toggleDet, toggleDet2,
+                bdbox,
+                device1_state, device2_state, device3_state));
+    }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,9 +111,19 @@ public class CameraPreview extends AppCompatActivity {
         Thread serverThread2 = new Thread(new ServerThread2(uiHandler,device2_state, bdbox));
         serverThread2.start();
 
+        // Device3 (DET)
+        Thread serverThread3 = new Thread(new ServerThread2(uiHandler,device3_state, bdbox));
+        serverThread3.start();
+
         // set the camera preview state
         this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox, device1_state, device2_state));
+        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
+                cameraHandler,
+                textureView,
+                model,
+                toggleSeg, toggleDet, toggleDet2,
+                bdbox,
+                device1_state, device2_state, device3_state));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
@@ -125,9 +145,7 @@ public class CameraPreview extends AppCompatActivity {
                 // 버튼 텍스트 변경
                 updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
-//                Log.d(TAG, "toggleSegButton clicked, isEnabled: " + toggleSegButton.isEnabled());
-
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
+                setupCustomSurfaceListener();
             }
         });
 
@@ -142,14 +160,12 @@ public class CameraPreview extends AppCompatActivity {
                 // 버튼 텍스트 변경
                 updateButtonText(toggleDetButton, "Det", toggleDet);
 
-//                Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
-
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
+                setupCustomSurfaceListener();
             }
         });
 
         // Det2 Button
-        updateButtonText(toggleDet2Button, "Det", toggleDet);
+        updateButtonText(toggleDet2Button, "Det", toggleDet2);
         this.toggleDet2Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,11 +175,9 @@ public class CameraPreview extends AppCompatActivity {
                 // 버튼 텍스트 변경
                 updateButtonText(toggleDet2Button, "Det", toggleDet2);
 
-//                Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDet2Button.isEnabled());
-
+                setupCustomSurfaceListener();
             }
         });
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
     }
 
     private void updateButtonText(Button button, String label, boolean isToggleOn) {

@@ -14,6 +14,7 @@
 
 #include "nanodet.h"
 #include "yolov8.h"
+#include "nanodet_tstl.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -132,6 +133,7 @@ jobject MatToBitmap(JNIEnv *env, cv::Mat src) {
 
 static NanoDet *g_nanodet = 0;
 static Yolov8 *g_yolo = 0;
+static NanoDet2 *g_nanodet2 = 0;
 static ncnn::Mutex lock;
 
 extern "C" {
@@ -151,8 +153,10 @@ JNIEXPORT void JNI_OnUnload(JavaVM * vm, void * reserved) {
 
         delete g_nanodet;
         delete g_yolo;
+        delete g_nanodet2;
         g_nanodet = 0;
         g_yolo = 0;
+        g_nanodet2 = 0;
     }
 }
 
@@ -174,11 +178,13 @@ Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
     {
         ncnn::MutexLockGuard g(lock);
 
-        if (!g_nanodet && !g_yolo){
+        if (!g_nanodet && !g_yolo && !g_nanodet2){
             g_yolo = new Yolov8;
             g_nanodet = new NanoDet;
+            g_nanodet2 = new NanoDet2;
             g_yolo->load(mgr, use_gpu);
             g_nanodet->load(mgr, use_gpu);
+            g_nanodet2->load(mgr, use_gpu);
             }
     }
 
@@ -226,6 +232,11 @@ Java_com_example_demoproject_1master_Ncnn_homogeneousComputing(JNIEnv *env,
             std::vector<NanoDetObject> objects;
             g_nanodet->detect(rgb, objects);
             g_nanodet->draw(rgb, objects);
+        }
+        if (option[2]) {
+            std::vector<NanoDet2Object> objects;
+            g_nanodet2->detect(rgb, objects);
+            g_nanodet2->draw(rgb, objects);
         }
 
 // 이미지 뷰 업데이트 JNI 호출
