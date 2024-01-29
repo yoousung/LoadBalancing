@@ -11,12 +11,9 @@ public class SocketThread implements Runnable {
     private String serverIp;
     private Bitmap bmp;
 
-    public SocketThread(String ip_data) {
-        this.serverIp = ip_data;
-    }
-
-    public SocketThread(Bitmap bmp) {
+    public SocketThread(Bitmap bmp, String ip_data) {
         this.bmp = bmp;
+        this.serverIp = ip_data;
     }
 
     @Override

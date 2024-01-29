@@ -1,11 +1,6 @@
 package com.example.demoproject_master;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,16 +8,11 @@ import android.os.Message;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class CameraPreview extends AppCompatActivity {
 
@@ -78,7 +68,8 @@ public class CameraPreview extends AppCompatActivity {
                 model,
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
-                device1_state, device2_state, device3_state));
+                device1_state, device2_state, device3_state,
+                ip_data, case_index));
     }
     
     @Override
@@ -123,7 +114,8 @@ public class CameraPreview extends AppCompatActivity {
                 model,
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
-                device1_state, device2_state, device3_state));
+                device1_state, device2_state, device3_state,
+                ip_data, case_index));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
