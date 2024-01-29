@@ -48,6 +48,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private String ip_data;
     private int case_index;
+
     private Handler handler = new Handler();
 
     // 송수신 데이터 자바내 데이터 송수신
@@ -99,7 +100,7 @@ public class CameraPreview extends AppCompatActivity {
 
         // set the camera preview state
         this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox, device1_state, device2_state));
+        textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox, device1_state, device2_state, ip_data, case_index));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
@@ -123,7 +124,7 @@ public class CameraPreview extends AppCompatActivity {
 
                 Log.d(TAG, "toggleSegButton clicked, isEnabled: " + toggleSegButton.isEnabled());
 
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state, ip_data, case_index));
             }
         });
 
@@ -140,7 +141,7 @@ public class CameraPreview extends AppCompatActivity {
 
                 Log.d(TAG, "toggleDetButton clicked, isEnabled: " +toggleDetButton.isEnabled());
 
-                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state));
+                textureView.setSurfaceTextureListener(new CustomSurfaceListener(cameraHandler, textureView, model, toggleSeg, toggleDet, bdbox,device1_state, device2_state, ip_data, case_index));
             }
         });
     }

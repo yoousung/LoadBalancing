@@ -79,7 +79,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 set_socket();
-                start_CameraPreviewActivity(case_index, ip_data);
+
+                if(case_index==0){
+                    // 토스트 메시지 표시 예시
+                    Toast.makeText(getApplicationContext(), "전송할 디바이스를 선택해 주세요", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    start_CameraPreviewActivity(case_index, ip_data);
+                }
+
             }
         });
 
