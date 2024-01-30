@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView connectedDevices;
     private Button scanButton, cameraButton;
 //    private Button exitButton;
-    private int case_index;
     private String ip_data;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,20 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         setPermission();
         initViews();
-        // 전송할 Device선택
-        deviceSwitches.get(0).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                device1_state = isChecked;
-            }
-        });
-
-        deviceSwitches.get(1).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                device2_state = isChecked;
-            }
-        });
+        view_connect_device();
 
         // 검색 버튼 클릭시 -> 현재 연결된 핸드폰 ip추출
         scanButton.setOnClickListener(new View.OnClickListener() {
@@ -109,18 +95,12 @@ public class MainActivity extends AppCompatActivity {
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
 
-        deviceSwitches.add(findViewById(R.id.device_switch1));
-        deviceSwitches.add(findViewById(R.id.device_switch2));
-        deviceSwitches.add(findViewById(R.id.device_switch3));
-
         deviceIps.add(findViewById(R.id.connect_Device1));
         deviceIps.add(findViewById(R.id.connect_Device2));
         deviceIps.add(findViewById(R.id.connect_Device3));
 
         for (LinearLayout linearLayout : linearLayoutDevices)
             linearLayout.setVisibility(View.GONE);
-        for (Switch deviceSwitch : deviceSwitches)
-            deviceSwitch.setVisibility(View.GONE);
     }
 
     // 통신 설정 : 4가지 case, Device1 = on/off, Device2 = on/off
@@ -179,11 +159,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDeviceView(LinearLayout layout,
-                                @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchView,
                                 TextView ipTextView,
                                 String ipAddress) {
         layout.setVisibility(View.VISIBLE);
-        switchView.setVisibility(View.VISIBLE);
         ipTextView.setText(ipAddress);
         ip_data = ipAddress;
     }

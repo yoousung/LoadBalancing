@@ -69,7 +69,7 @@ public class CameraPreview extends AppCompatActivity {
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
                 device1_state, device2_state, device3_state,
-                ip_data, case_index));
+                ip_data));
     }
     
     @Override
@@ -87,8 +87,7 @@ public class CameraPreview extends AppCompatActivity {
         this.device1_state = findViewById(R.id.device1_state);
         this.device2_state = findViewById(R.id.device2_state);
         this.device3_state = findViewById(R.id.device3_state);
-        this.case_index = getIntent().getIntExtra("case_index", -1);
-        this.ip_data = getIntent().getStringExtra("ip_data");
+        this.ip_data = getIntent().getStringArrayListExtra("ip_data");
 
         //Log.e(TAG, "IP : "+ip_data);
 

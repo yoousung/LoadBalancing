@@ -7,8 +7,6 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-
-    // 상단 Layout
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -155,24 +153,6 @@
                 android:layout_weight="1"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp">
-
-                <Switch
-                    android:id="@+id/device_switch1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="25dp"/>
-
-                <Switch
-                    android:id="@+id/device_switch2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="25dp"/>
-
-                <Switch
-                    android:id="@+id/device_switch3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="25dp" />
             </LinearLayout>
 
         </LinearLayout>
