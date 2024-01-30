@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 public class CameraPreview extends AppCompatActivity {
 
     private CameraHandler cameraHandler;
@@ -38,7 +40,7 @@ public class CameraPreview extends AppCompatActivity {
     private TextView device2_state;
     private TextView device3_state;
 
-    private String ip_data;
+    private ArrayList<String> ip_data;
     private int case_index;
     private Handler handler = new Handler();
 

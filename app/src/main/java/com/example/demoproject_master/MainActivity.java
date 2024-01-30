@@ -28,14 +28,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    private List<LinearLayout> linearLayoutDevices = new ArrayList<>();
-    private List<Switch> deviceSwitches = new ArrayList<>();
-    private List<TextView> deviceIps = new ArrayList<>();
-    private boolean device1_state, device2_state; // Device 선택 판정
+    private final List<LinearLayout> linearLayoutDevices = new ArrayList<>();
+    private final List<TextView> deviceIps = new ArrayList<>();
     private TextView connectedDevices;
     private Button scanButton, cameraButton;
 //    private Button exitButton;
-    private String ip_data;
+    private ArrayList<String> ip_list;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,13 +56,7 @@ public class MainActivity extends AppCompatActivity {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                set_socket();
-                if(case_index==0){
-                    Toast.makeText(getApplicationContext(), "No device available", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    start_CameraPreviewActivity(case_index, ip_data);
-                }
+                start_CameraPreviewActivity(ip_list);
             }
         });
 
@@ -104,10 +96,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 카메라 프리뷰 시작
-    private void start_CameraPreviewActivity(int caseIndex, String ipData) {
+    private void start_CameraPreviewActivity(ArrayList<String> ip_list) {
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
-        intent.putExtra("case_index", caseIndex);
-        intent.putExtra("ip_data", ipData);
+        intent.putExtra("ip_data", ip_list);
         startActivity(intent);
     }
 
@@ -120,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
         for (Switch deviceSwitch : deviceSwitches)
             deviceSwitch.setVisibility(View.GONE);
 
-        ArrayList<String> ip_list = getConnectedDevices();
+        ip_list = null;
+        ip_list = getConnectedDevices();
         int deviceLength = ip_list.size();
 
         if (deviceLength == 0)
@@ -140,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                                 String ipAddress) {
         layout.setVisibility(View.VISIBLE);
         ipTextView.setText(ipAddress);
-        ip_data = ipAddress;
     }
 
 
