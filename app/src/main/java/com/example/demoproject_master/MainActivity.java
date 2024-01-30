@@ -28,15 +28,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    private List<LinearLayout> linearLayoutDevices = new ArrayList<>();
-    private List<Switch> deviceSwitches = new ArrayList<>();
-    private List<TextView> deviceIps = new ArrayList<>();
-    private boolean device1_state, device2_state; // Device 선택 판정
+    private final List<LinearLayout> linearLayoutDevices = new ArrayList<>();
+    private final List<TextView> deviceIps = new ArrayList<>();
     private TextView connectedDevices;
     private Button scanButton, cameraButton;
 //    private Button exitButton;
-    private int case_index;
-    private String ip_data;
+    private ArrayList<String> ip_list;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,20 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         setPermission();
         initViews();
-        // 전송할 Device선택
-        deviceSwitches.get(0).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                device1_state = isChecked;
-            }
-        });
-
-        deviceSwitches.get(1).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                device2_state = isChecked;
-            }
-        });
+        view_connect_device();
 
         // 검색 버튼 클릭시 -> 현재 연결된 핸드폰 ip추출
         scanButton.setOnClickListener(new View.OnClickListener() {
@@ -72,13 +56,7 @@ public class MainActivity extends AppCompatActivity {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                set_socket();
-                if(case_index==0){
-                    Toast.makeText(getApplicationContext(), "No device available", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    start_CameraPreviewActivity(case_index, ip_data);
-                }
+                start_CameraPreviewActivity(ip_list);
             }
         });
 
@@ -109,48 +87,18 @@ public class MainActivity extends AppCompatActivity {
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
         linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
 
-        deviceSwitches.add(findViewById(R.id.device_switch1));
-        deviceSwitches.add(findViewById(R.id.device_switch2));
-        deviceSwitches.add(findViewById(R.id.device_switch3));
-
         deviceIps.add(findViewById(R.id.connect_Device1));
         deviceIps.add(findViewById(R.id.connect_Device2));
         deviceIps.add(findViewById(R.id.connect_Device3));
 
         for (LinearLayout linearLayout : linearLayoutDevices)
             linearLayout.setVisibility(View.GONE);
-        for (Switch deviceSwitch : deviceSwitches)
-            deviceSwitch.setVisibility(View.GONE);
-    }
-
-    // 통신 설정 : 4가지 case, Device1 = on/off, Device2 = on/off
-    private void set_socket(){
-        // off, off
-        if(!device1_state && !device2_state){
-            Log.e("MainActivity", "Device를 선택해 주세요");
-        }
-
-        // on, off
-        if(device1_state && !device2_state){
-            case_index = 1;
-        }
-
-        // off, on
-        if(!device1_state && device2_state){
-            case_index = 2;
-        }
-
-        // on, on
-        if(device1_state && device2_state){
-            case_index = 3;
-        }
     }
 
     // 카메라 프리뷰 시작
-    private void start_CameraPreviewActivity(int caseIndex, String ipData) {
+    private void start_CameraPreviewActivity(ArrayList<String> ip_list) {
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
-        intent.putExtra("case_index", caseIndex);
-        intent.putExtra("ip_data", ipData);
+        intent.putExtra("ip_data", ip_list);
         startActivity(intent);
     }
 
@@ -160,10 +108,9 @@ public class MainActivity extends AppCompatActivity {
     private void view_connect_device() {
         for (LinearLayout linearLayout : linearLayoutDevices)
             linearLayout.setVisibility(View.GONE);
-        for (Switch deviceSwitch : deviceSwitches)
-            deviceSwitch.setVisibility(View.GONE);
 
-        ArrayList<String> ip_list = getConnectedDevices();
+        ip_list = null;
+        ip_list = getConnectedDevices();
         int deviceLength = ip_list.size();
 
         if (deviceLength == 0)
@@ -172,20 +119,17 @@ public class MainActivity extends AppCompatActivity {
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < deviceLength; i++) {
                 stringBuilder.append("Connected Device IP: ").append(ip_list.get(i)).append("\n");
-                showDeviceView(linearLayoutDevices.get(i), deviceSwitches.get(i), deviceIps.get(i), ip_list.get(i));
+                showDeviceView(linearLayoutDevices.get(i), deviceIps.get(i), ip_list.get(i));
             }
             connectedDevices.setText(stringBuilder.toString());
         }
     }
 
     private void showDeviceView(LinearLayout layout,
-                                @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchView,
                                 TextView ipTextView,
                                 String ipAddress) {
         layout.setVisibility(View.VISIBLE);
-        switchView.setVisibility(View.VISIBLE);
         ipTextView.setText(ipAddress);
-        ip_data = ipAddress;
     }
 
 

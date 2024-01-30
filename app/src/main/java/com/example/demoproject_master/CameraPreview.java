@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 public class CameraPreview extends AppCompatActivity {
 
     private CameraHandler cameraHandler;
@@ -29,7 +31,7 @@ public class CameraPreview extends AppCompatActivity {
     private boolean toggleDet = false;
     private boolean toggleDet2 = false;
 
-    private Ncnn model = new Ncnn();
+    private final Ncnn model = new Ncnn();
     private int current_model = 0;
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
@@ -38,7 +40,7 @@ public class CameraPreview extends AppCompatActivity {
     private TextView device2_state;
     private TextView device3_state;
 
-    private String ip_data;
+    private ArrayList<String> ip_data;
     private int case_index;
     private Handler handler = new Handler();
 
@@ -69,7 +71,7 @@ public class CameraPreview extends AppCompatActivity {
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
                 device1_state, device2_state, device3_state,
-                ip_data, case_index));
+                ip_data));
     }
     
     @Override
@@ -87,8 +89,7 @@ public class CameraPreview extends AppCompatActivity {
         this.device1_state = findViewById(R.id.device1_state);
         this.device2_state = findViewById(R.id.device2_state);
         this.device3_state = findViewById(R.id.device3_state);
-        this.case_index = getIntent().getIntExtra("case_index", -1);
-        this.ip_data = getIntent().getStringExtra("ip_data");
+        this.ip_data = getIntent().getStringArrayListExtra("ip_data");
 
         //Log.e(TAG, "IP : "+ip_data);
 
@@ -115,13 +116,13 @@ public class CameraPreview extends AppCompatActivity {
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
                 device1_state, device2_state, device3_state,
-                ip_data, case_index));
+                ip_data));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                StateSingleton.getInstance().runScanning = !StateSingleton.getInstance().runScanning;
+                StateSingleton.runScanning = !StateSingleton.runScanning;
                 startBtn.setText(startBtn.getText().equals("Start") ? "Stop" : "Start");
             }
         });
@@ -131,10 +132,9 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleSegButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleSeg = !toggleSeg; // 토글
+                toggleSeg = !toggleSeg;
                 toggleSegButton.setEnabled(true);
 
-                // 버튼 텍스트 변경
                 updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
                 setupCustomSurfaceListener();
@@ -146,10 +146,9 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleDetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleDet = !toggleDet; // 토글
+                toggleDet = !toggleDet;
                 toggleDetButton.setEnabled(true);
 
-                // 버튼 텍스트 변경
                 updateButtonText(toggleDetButton, "Det", toggleDet);
 
                 setupCustomSurfaceListener();
@@ -161,10 +160,9 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleDet2Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleDet2 = !toggleDet2; // 토글
+                toggleDet2 = !toggleDet2;
                 toggleDet2Button.setEnabled(true);
 
-                // 버튼 텍스트 변경
                 updateButtonText(toggleDet2Button, "Det", toggleDet2);
 
                 setupCustomSurfaceListener();
@@ -178,11 +176,6 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        // TODO : 모델 로드부
-        // single
-        // model.loadModel(getAssets(), current_model, current_cpugpu);
-
-        // multi
         if (!model.loadModel(getAssets(), current_model, current_cpugpu))
             Log.e(TAG, "model load failed");
         Log.e(TAG, "model load success");
