@@ -108,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
     private void view_connect_device() {
         for (LinearLayout linearLayout : linearLayoutDevices)
             linearLayout.setVisibility(View.GONE);
-        for (Switch deviceSwitch : deviceSwitches)
-            deviceSwitch.setVisibility(View.GONE);
 
         ip_list = null;
         ip_list = getConnectedDevices();
