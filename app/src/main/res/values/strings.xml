@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DemoProject_Master</string>
+    <string name="app_name">LBMaster</string>
     <string-array name="model_array">
         <item>nanodet-m</item>
         <item>yolov8_both</item>
