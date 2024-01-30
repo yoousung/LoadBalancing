@@ -114,7 +114,7 @@ public class CameraPreview extends AppCompatActivity {
                 toggleSeg, toggleDet, toggleDet2,
                 bdbox,
                 device1_state, device2_state, device3_state,
-                ip_data, case_index));
+                ip_data));
 
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {

@@ -103,29 +103,6 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.setVisibility(View.GONE);
     }
 
-    // 통신 설정 : 4가지 case, Device1 = on/off, Device2 = on/off
-    private void set_socket(){
-        // off, off
-        if(!device1_state && !device2_state){
-            Log.e("MainActivity", "Device를 선택해 주세요");
-        }
-
-        // on, off
-        if(device1_state && !device2_state){
-            case_index = 1;
-        }
-
-        // off, on
-        if(!device1_state && device2_state){
-            case_index = 2;
-        }
-
-        // on, on
-        if(device1_state && device2_state){
-            case_index = 3;
-        }
-    }
-
     // 카메라 프리뷰 시작
     private void start_CameraPreviewActivity(int caseIndex, String ipData) {
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
@@ -152,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < deviceLength; i++) {
                 stringBuilder.append("Connected Device IP: ").append(ip_list.get(i)).append("\n");
-                showDeviceView(linearLayoutDevices.get(i), deviceSwitches.get(i), deviceIps.get(i), ip_list.get(i));
+                showDeviceView(linearLayoutDevices.get(i), deviceIps.get(i), ip_list.get(i));
             }
             connectedDevices.setText(stringBuilder.toString());
         }
