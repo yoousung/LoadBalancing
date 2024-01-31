@@ -138,13 +138,11 @@ public class MainActivity extends AppCompatActivity {
         PermissionListener permission = new PermissionListener() {
             @Override
             public void onPermissionGranted() { // 설정해 놓은 위험권한들이 허용 되었을 경우
-                Toast.makeText(MainActivity.this, "권한이 허용 되었습니다.",Toast.LENGTH_SHORT).show();
-                Log.d("권한", "권한 허가 상태");
+                Toast.makeText(MainActivity.this, "Permission allowed.",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onPermissionDenied(List<String> deniedPermissions) { // 설정해 놓은 위험권한들이 허용되지 않았을 경우우
-                Toast.makeText(MainActivity.this, "권한이 거부 되었습니다.",Toast.LENGTH_SHORT).show();
-                Log.e("권한", "권한 거부 상태");
+                Toast.makeText(MainActivity.this, "Permission denied.",Toast.LENGTH_SHORT).show();
             }
         };
         TedPermission.with(MainActivity.this)
