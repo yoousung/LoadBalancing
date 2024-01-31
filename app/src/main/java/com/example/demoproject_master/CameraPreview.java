@@ -46,11 +46,11 @@ public class CameraPreview extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case ServerThread.MESSAGE_BBOX_DATA:
+                case ServerThreadDET.MESSAGE_BBOX_DATA:
                     String bboxdata = (String) msg.obj;
                     updateBboxdata(bboxdata);
                     break;
-                case ServerThread2.MESSAGE_SEG_DATA:
+                case ServerThreadSEG.MESSAGE_SEG_DATA:
                     Bitmap receivedBitmap = (Bitmap) msg.obj;
                     // 받아온 Bitmap을 사용하여 UI 업데이트 등을 수행
                     updateBboxImage(receivedBitmap);
@@ -92,15 +92,15 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        Thread serverThread = new Thread(new ServerThread(uiHandler,device1_state));
+        Thread serverThread = new Thread(new ServerThreadDET(13579, uiHandler,device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThread2(uiHandler,device2_state, bdbox));
+        Thread serverThread2 = new Thread(new ServerThreadSEG(2468, uiHandler,device2_state, bdbox));
         serverThread2.start();
 
         // Device3 (DET)
-        Thread serverThread3 = new Thread(new ServerThread2(uiHandler,device3_state, bdbox));
+        Thread serverThread3 = new Thread(new ServerThreadDET(131, uiHandler,device3_state));
         serverThread3.start();
 
         // set the camera preview state
