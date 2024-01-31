@@ -46,7 +46,8 @@
             android:id="@+id/connectedDevices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"/>
     </LinearLayout>
 
 
@@ -78,13 +79,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
                         android:text="Device1 IP : "
-                        android:textSize="25dp" />
+                        android:textSize="25sp" />
                     <TextView
                         android:id="@+id/connect_Device1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="25dp"
+                        android:textSize="25sp"
                         android:text="..."/>
                 </LinearLayout>
 
@@ -97,15 +99,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
                         android:text="Device2 IP : "
-                        android:textSize="25dp" />
+                        android:textSize="25sp" />
 
                     <TextView
                         android:id="@+id/connect_Device2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="..."
-                        android:textSize="25dp" />
+                        android:textSize="25sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -117,15 +120,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
                         android:text="Device3 IP : "
-                        android:textSize="25dp" />
+                        android:textSize="25sp" />
 
                     <TextView
                         android:id="@+id/connect_Device3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="..."
-                        android:textSize="25dp" />
+                        android:textSize="25sp" />
                 </LinearLayout>
 
 <!--                <LinearLayout-->

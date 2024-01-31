@@ -2,6 +2,5 @@
 .gradle
 .cxx
 app/build
-ncnn-20201218-android
-ncnn-20220420-android
-opencv-mobile-4.5.1-android
+ncnn-*-android
+opencv-mobile-*-android

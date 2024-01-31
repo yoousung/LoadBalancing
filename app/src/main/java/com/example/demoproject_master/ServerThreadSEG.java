@@ -1,8 +1,11 @@
 package com.example.demoproject_master;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.BufferedInputStream;
@@ -10,23 +13,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
-// DET 소켓 통신
-// Device1 socket (DET)
-public class ServerThread implements Runnable {
+// SEG 소켓 통신
+// Device2 socket (SEG)
+public class ServerThreadSEG implements Runnable {
 
     private Handler uiHandler;
-    private TextView device1_state;
+    private TextView device2_state;
+    private int serverPort;
+    public static final int MESSAGE_SEG_DATA = 2;
 
-    private int serverPort = 13579;
-    public static final int MESSAGE_BBOX_DATA = 1;
+    private ImageView bdbox;
 
-    private volatile String Bbox_data; // "volatile" 추가
-
-    public ServerThread(Handler uiHandler, TextView device1_state){
+    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state, ImageView bdbox){
+        this.serverPort = serverPort;
         this.uiHandler = uiHandler;
-        this.device1_state = device1_state;
+        this.device2_state = device2_state;
+        this.bdbox = bdbox;
     }
 
     @Override
@@ -44,36 +47,32 @@ public class ServerThread implements Runnable {
                 // 클라이언트로부터 문자열 데이터 수신신
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
+                byte[] data = new byte[4096]; // 1024 = 1KB 크기 버퍼
                 int bytesRead;
 
                 while ((bytesRead = inFromClient.read(data)) != -1) {
                     byteArrayOutputStream.write(data, 0, bytesRead);
                 }
                 byte[] receivedData = byteArrayOutputStream.toByteArray();
-
-                // 수신받은 데이터 출력
-                String receivedText = new String(receivedData, StandardCharsets.UTF_8);
-
-                Bbox_data = receivedText;
+                Bitmap receiveBitmap = BitmapFactory.decodeByteArray(receivedData, 0, receivedData.length);
 
                 // UI 업데이트를 메인 스레드에서 처리
                 uiHandler.post(() -> {
-                    if (receivedText.equals("off") || receivedText == null) {
-                        device1_state.setText("off");
+                    if (receiveBitmap != null){
+                        device2_state.setText("on");
                     } else {
-                        device1_state.setText("on");
+                        device2_state.setText("off");
                     }
                 });
-                // main으로 데이터 전송
-                Message message = uiHandler.obtainMessage(MESSAGE_BBOX_DATA, receivedText);
+
+                // 메인 액티비티로 Bitmap 전달
+                Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
                 uiHandler.sendMessage(message);
 
                 // 클라이언트 소켓 닫기
                 clientSocket.close();
             }
         } catch (IOException e) {
-            device1_state.setText("off");
             e.printStackTrace();
         }
     }
