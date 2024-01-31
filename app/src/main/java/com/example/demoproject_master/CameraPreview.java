@@ -23,9 +23,7 @@ public class CameraPreview extends AppCompatActivity {
     private final String TAG = "CameraPreviewTask";
 
     private Button startBtn;
-    private Button toggleSegButton;
-    private Button toggleDetButton;
-    private Button toggleDet2Button;
+    private Button toggleSegButton, toggleDetButton, toggleDet2Button;
 
     private boolean toggleSeg = false;
     private boolean toggleDet = false;
@@ -36,9 +34,7 @@ public class CameraPreview extends AppCompatActivity {
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
 
-    private TextView device1_state;
-    private TextView device2_state;
-    private TextView device3_state;
+    private TextView device1_state, device2_state, device3_state;
 
     private ArrayList<String> ip_data;
     private int case_index;
@@ -118,17 +114,23 @@ public class CameraPreview extends AppCompatActivity {
                 device1_state, device2_state, device3_state,
                 ip_data));
 
+
+        updateButtonText(toggleSegButton, "Seg", toggleSeg);
+        updateButtonText(toggleDetButton, "Det", toggleDet);
+        updateButtonText(toggleDet2Button, "Det", toggleDet2);
+        StateSingleton.runScanning = true;
+        updateButtonText(startBtn, "Send", StateSingleton.runScanning);
+
         // stop/start the client to server bytes transfer
         this.startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StateSingleton.runScanning = !StateSingleton.runScanning;
-                startBtn.setText(startBtn.getText().equals("Start") ? "Stop" : "Start");
+                updateButtonText(startBtn, "Send", StateSingleton.runScanning);
             }
         });
 
         // Seg Button
-        updateButtonText(toggleSegButton, "Seg", toggleSeg);
         this.toggleSegButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,7 +144,6 @@ public class CameraPreview extends AppCompatActivity {
         });
 
         // Det Button
-        updateButtonText(toggleDetButton, "Det", toggleDet);
         this.toggleDetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,7 +157,6 @@ public class CameraPreview extends AppCompatActivity {
         });
 
         // Det2 Button
-        updateButtonText(toggleDet2Button, "Det", toggleDet2);
         this.toggleDet2Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
