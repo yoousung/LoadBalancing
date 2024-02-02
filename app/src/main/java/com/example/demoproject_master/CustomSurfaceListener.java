@@ -101,12 +101,12 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         Bitmap segbitmap = null;
         // 2-1) det
         if(device1_state.getText().equals("on"))
-            bboxdata = BboxDataHolder.getInstance().getBboxdata();
+            bboxdata = DataHolderDET.getInstance().getBboxdata();
         if(Objects.equals(bboxdata, " "))
             bboxdata = null;
         // 2-2) seg
         if(device2_state.getText().equals("on"))
-            segbitmap = SegDataHolder.getInstance().getSegdata();
+            segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
     }

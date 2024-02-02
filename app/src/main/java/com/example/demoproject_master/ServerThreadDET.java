@@ -20,7 +20,7 @@ public class ServerThreadDET implements Runnable {
     private final TextView device1_state;
 
     private final int serverPort;
-    public static final int MESSAGE_BBOX_DATA = 1;
+    public static final int MESSAGE_DET_DATA = 1;
 
     // "volatile" 추가
 
@@ -65,7 +65,7 @@ public class ServerThreadDET implements Runnable {
                     }
                 });
                 // main으로 데이터 전송
-                Message message = uiHandler.obtainMessage(MESSAGE_BBOX_DATA, receivedText);
+                Message message = uiHandler.obtainMessage(MESSAGE_DET_DATA, receivedText);
                 uiHandler.sendMessage(message);
 
                 // 클라이언트 소켓 닫기
