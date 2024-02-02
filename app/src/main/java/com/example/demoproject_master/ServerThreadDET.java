@@ -22,7 +22,7 @@ public class ServerThreadDET implements Runnable {
     private final int serverPort;
     public static final int MESSAGE_BBOX_DATA = 1;
 
-    private volatile String Bbox_data; // "volatile" 추가
+    // "volatile" 추가
 
     public ServerThreadDET(int serverPort, Handler uiHandler, TextView device1_state){
         this.serverPort = serverPort;
@@ -55,8 +55,6 @@ public class ServerThreadDET implements Runnable {
 
                 // 수신받은 데이터 출력
                 String receivedText = new String(receivedData, StandardCharsets.UTF_8);
-
-                Bbox_data = receivedText;
 
                 // UI 업데이트를 메인 스레드에서 처리
                 uiHandler.post(() -> {

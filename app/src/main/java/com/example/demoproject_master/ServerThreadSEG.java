@@ -23,13 +23,10 @@ public class ServerThreadSEG implements Runnable {
     private int serverPort;
     public static final int MESSAGE_SEG_DATA = 2;
 
-    private ImageView bdbox;
-
-    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state, ImageView bdbox){
+    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state){
         this.serverPort = serverPort;
         this.uiHandler = uiHandler;
         this.device2_state = device2_state;
-        this.bdbox = bdbox;
     }
 
     @Override

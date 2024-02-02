@@ -96,7 +96,7 @@ public class CameraPreview extends AppCompatActivity {
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThreadSEG(2468, uiHandler,device2_state, bdbox));
+        Thread serverThread2 = new Thread(new ServerThreadSEG(2468, uiHandler,device2_state));
         serverThread2.start();
 
         // Device3 (DET)
