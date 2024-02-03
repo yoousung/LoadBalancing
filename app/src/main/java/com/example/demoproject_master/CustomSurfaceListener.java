@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CustomSurfaceListener implements TextureView.SurfaceTextureListener {
 
@@ -25,7 +27,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
     private final ImageView bdbox;
     private final TextView device1_state, device2_state, device3_state;
     private final ArrayList<String> ip_list;
-    private int index_state;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public CustomSurfaceListener(CameraHandler cameraHandler,
                                  TextureView textureView,
@@ -76,8 +78,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             // Device available
             if(ip_list.size() != 0){
                 StateSingleton.waitInterval = true;
-                Thread socketThread = new Thread(new SocketThread(currentbmp, ip_list));
-                socketThread.start();
+                executorService.submit(new SocketThread(currentbmp, ip_list));
             }
             new Handler().postDelayed(new Runnable() {
                 @Override
