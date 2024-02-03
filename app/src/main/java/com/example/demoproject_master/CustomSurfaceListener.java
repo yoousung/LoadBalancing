@@ -20,7 +20,6 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
     protected CameraHandler cameraHandler;
     protected TextureView textureView;
     protected boolean wait = false;
-    //protected int interval = 1000;
     protected int interval = 50; // 이미지 데이터 전송 딜레이 설정
     private final Ncnn model;
     private final boolean toggleSeg, toggleDet, toggleDet2;
