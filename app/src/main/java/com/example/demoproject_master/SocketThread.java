@@ -1,7 +1,6 @@
 package com.example.demoproject_master;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,25 +20,27 @@ public class SocketThread implements Runnable {
     @Override
     public void run() {
         try {
-            // TODO : multithreading
-            for (String ip : iplist) {
-                Socket clientSocket = new Socket(ip, 1357);
+            Socket clientSocket = new Socket(iplist.get(0), 1300);
+            Socket clientSocket2 = new Socket(iplist.get(1), 1301);
 
-                // Send image to server
-                BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+            BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+            BufferedOutputStream outToServer2 = new BufferedOutputStream(clientSocket2.getOutputStream());
 
-                // byte array and recycle call for better performance
-                byte[] byteArray = stream.toByteArray();
-                bmp.recycle();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 70, stream);
 
-                outToServer.write(byteArray);
-                outToServer.flush(); // 버퍼 비우기
-                clientSocket.close();
-            }
+            byte[] byteArray = stream.toByteArray();
+            bmp.recycle();
+
+            outToServer.write(byteArray);
+            outToServer2.write(byteArray);
+            outToServer.flush(); // 버퍼 비우기
+            outToServer2.flush(); // 버퍼 비우기
+            clientSocket.close();
+            clientSocket2.close();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

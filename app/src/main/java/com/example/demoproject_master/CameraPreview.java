@@ -89,15 +89,15 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        Thread serverThread = new Thread(new ServerThreadDET(13579, uiHandler,device1_state));
+        Thread serverThread = new Thread(new ServerThreadDET(3001, uiHandler,device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThreadSEG(2468, uiHandler,device2_state));
+        Thread serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler,device2_state));
         serverThread2.start();
 
         // Device3 (DET)
-        Thread serverThread3 = new Thread(new ServerThreadDET(131, uiHandler,device3_state));
+        Thread serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler,device3_state));
         serverThread3.start();
 
         // set the camera preview state
