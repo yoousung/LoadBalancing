@@ -33,13 +33,9 @@ public class ServerThreadDET implements Runnable {
     @SuppressLint("SetTextI18n")
     @Override
     public void run(){
-        try {
-            ServerSocket serverSocket = new ServerSocket(serverPort);
-            Log.i("ServerThread", "Server listening on port " + serverPort);
-
+        try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                Log.i("ServerThread", "Client connected: " + clientSocket.getInetAddress());
 
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -62,8 +58,6 @@ public class ServerThreadDET implements Runnable {
 
                 Message message = uiHandler.obtainMessage(MESSAGE_DET_DATA, receivedText);
                 uiHandler.sendMessage(message);
-
-                clientSocket.close();
             }
         } catch (IOException e) {
             device1_state.setText("off");
