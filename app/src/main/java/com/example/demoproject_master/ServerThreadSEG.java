@@ -4,9 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.demoproject.Seg.ImageData;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,22 +23,17 @@ public class ServerThreadSEG implements Runnable {
     private final int serverPort;
     public static final int MESSAGE_SEG_DATA = 2;
 
-    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state){
+    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state) {
         this.serverPort = serverPort;
         this.uiHandler = uiHandler;
         this.device2_state = device2_state;
     }
 
     @Override
-    public void run(){
-        try {
-            ServerSocket serverSocket = new ServerSocket(serverPort);
-            Log.i("ServerThread", "Server listening on port " + serverPort);
-
+    public void run() {
+        try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                Log.i("ServerThread", "Client connected: " + clientSocket.getInetAddress());
-
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
@@ -48,10 +43,16 @@ public class ServerThreadSEG implements Runnable {
                     byteArrayOutputStream.write(data, 0, bytesRead);
                 }
                 byte[] receivedData = byteArrayOutputStream.toByteArray();
-                Bitmap receiveBitmap = BitmapFactory.decodeByteArray(receivedData, 0, receivedData.length);
+
+                // Parse the protobuf message
+                ImageData imageDataProto = ImageData.parseFrom(receivedData);
+
+                // Get the image data from the protobuf message
+                byte[] imageBytes = imageDataProto.getImageData().toByteArray();
+                Bitmap receiveBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
 
                 uiHandler.post(() -> {
-                    if (receiveBitmap == null){
+                    if (receiveBitmap == null) {
                         device2_state.setText("off");
                     } else {
                         device2_state.setText("on");
@@ -61,7 +62,6 @@ public class ServerThreadSEG implements Runnable {
                 Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
                 uiHandler.sendMessage(message);
 
-                clientSocket.close();
             }
         } catch (IOException e) {
             device2_state.setText("off");
