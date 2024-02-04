@@ -8,7 +8,7 @@
 |![Screenshot_20231222_005406_DemoProject](https://github.com/bert13069598/LoadBalancing/assets/89738612/b11a6f93-9214-4b89-96e1-dba3c98910c2)|
 
 ### Setting
-- Gradle JDK corretto-11
+- Gradle JDK jbr-17
 - CMake 3.22.1
 - [opencv](https://github.com/nihui/opencv-mobile/releases)
 - [ncnn](https://github.com/Tencent/ncnn/releases)

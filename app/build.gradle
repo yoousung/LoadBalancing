@@ -37,6 +37,7 @@ android {
             path file('src/main/jni/CMakeLists.txt')
         }
     }
+    namespace 'com.example.demoproject_master'
 
 }
 
