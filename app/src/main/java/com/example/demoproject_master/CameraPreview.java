@@ -37,8 +37,6 @@ public class CameraPreview extends AppCompatActivity {
     private TextView device1_state, device2_state, device3_state;
 
     private ArrayList<String> ip_data;
-    private int case_index;
-    private Handler handler = new Handler();
 
     // 송수신 데이터 자바내 데이터 송수신
     private Handler uiHandler = new Handler(Looper.getMainLooper()) {
@@ -46,14 +44,13 @@ public class CameraPreview extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case ServerThreadDET.MESSAGE_BBOX_DATA:
+                case ServerThreadDET.MESSAGE_DET_DATA:
                     String bboxdata = (String) msg.obj;
-                    updateBboxdata(bboxdata);
+                    DataHolderDET.getInstance().setBboxdata(bboxdata);
                     break;
                 case ServerThreadSEG.MESSAGE_SEG_DATA:
                     Bitmap receivedBitmap = (Bitmap) msg.obj;
-                    // 받아온 Bitmap을 사용하여 UI 업데이트 등을 수행
-                    updateBboxImage(receivedBitmap);
+                    DataHolderSEG.getInstance().setSegdata(receivedBitmap);
                     break;
             }
         }
@@ -92,15 +89,15 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        Thread serverThread = new Thread(new ServerThreadDET(13579, uiHandler,device1_state));
+        Thread serverThread = new Thread(new ServerThreadDET(3001, uiHandler,device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThreadSEG(2468, uiHandler,device2_state, bdbox));
+        Thread serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler,device2_state));
         serverThread2.start();
 
         // Device3 (DET)
-        Thread serverThread3 = new Thread(new ServerThreadDET(131, uiHandler,device3_state));
+        Thread serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler,device3_state));
         serverThread3.start();
 
         // set the camera preview state
@@ -179,13 +176,5 @@ public class CameraPreview extends AppCompatActivity {
         if (!model.loadModel(getAssets(), current_model, current_cpugpu))
             Log.e(TAG, "model load failed");
         Log.e(TAG, "model load success");
-    }
-
-    private void updateBboxdata(String data) {
-        BboxDataHolder.getInstance().setBboxdata(data);
-    }
-
-    private void updateBboxImage(Bitmap receivedBitmap) {
-        SegDataHolder.getInstance().setSegdata(receivedBitmap);
     }
 }

@@ -12,20 +12,21 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CustomSurfaceListener implements TextureView.SurfaceTextureListener {
 
     protected CameraHandler cameraHandler;
     protected TextureView textureView;
     protected boolean wait = false;
-    //protected int interval = 1000;
     protected int interval = 50; // 이미지 데이터 전송 딜레이 설정
     private final Ncnn model;
     private final boolean toggleSeg, toggleDet, toggleDet2;
     private final ImageView bdbox;
     private final TextView device1_state, device2_state, device3_state;
     private final ArrayList<String> ip_list;
-    private int index_state;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public CustomSurfaceListener(CameraHandler cameraHandler,
                                  TextureView textureView,
@@ -76,8 +77,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             // Device available
             if(ip_list.size() != 0){
                 StateSingleton.waitInterval = true;
-                Thread socketThread = new Thread(new SocketThread(currentbmp, ip_list));
-                socketThread.start();
+                executorService.submit(new SocketThread(currentbmp, ip_list));
             }
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -101,12 +101,12 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         Bitmap segbitmap = null;
         // 2-1) det
         if(device1_state.getText().equals("on"))
-            bboxdata = BboxDataHolder.getInstance().getBboxdata();
+            bboxdata = DataHolderDET.getInstance().getBboxdata();
         if(Objects.equals(bboxdata, " "))
             bboxdata = null;
         // 2-2) seg
         if(device2_state.getText().equals("on"))
-            segbitmap = SegDataHolder.getInstance().getSegdata();
+            segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
     }

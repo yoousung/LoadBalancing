@@ -1,2 +1,2 @@
-rootProject.name = "DemoProject_Master"
+rootProject.name = "LBMaster"
 include ':app'

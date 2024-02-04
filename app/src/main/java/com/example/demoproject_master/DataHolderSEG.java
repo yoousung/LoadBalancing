@@ -2,15 +2,15 @@ package com.example.demoproject_master;
 
 import android.graphics.Bitmap;
 
-public class SegDataHolder {
-    private static final SegDataHolder instance = new SegDataHolder();
+public class DataHolderSEG {
+    private static final DataHolderSEG instance = new DataHolderSEG();
     private Bitmap segData;
 
-    private SegDataHolder() {
+    private DataHolderSEG() {
         // private 생성자로 싱글톤 패턴 유지
     }
 
-    public static SegDataHolder getInstance() {
+    public static DataHolderSEG getInstance() {
         return instance;
     }
 

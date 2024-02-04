@@ -18,36 +18,30 @@ import java.net.Socket;
 // Device2 socket (SEG)
 public class ServerThreadSEG implements Runnable {
 
-    private Handler uiHandler;
-    private TextView device2_state;
-    private int serverPort;
+    private final Handler uiHandler;
+    private final TextView device2_state;
+    private final int serverPort;
     public static final int MESSAGE_SEG_DATA = 2;
 
-    private ImageView bdbox;
-
-    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state, ImageView bdbox){
+    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state){
         this.serverPort = serverPort;
         this.uiHandler = uiHandler;
         this.device2_state = device2_state;
-        this.bdbox = bdbox;
     }
 
     @Override
     public void run(){
         try {
-            // 서버 소켓 생성
             ServerSocket serverSocket = new ServerSocket(serverPort);
             Log.i("ServerThread", "Server listening on port " + serverPort);
 
             while (true) {
-                // 클라이언트의 연결을 기다림
                 Socket clientSocket = serverSocket.accept();
                 Log.i("ServerThread", "Client connected: " + clientSocket.getInetAddress());
 
-                // 클라이언트로부터 문자열 데이터 수신신
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                byte[] data = new byte[4096]; // 1024 = 1KB 크기 버퍼
+                byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
                 int bytesRead;
 
                 while ((bytesRead = inFromClient.read(data)) != -1) {
@@ -56,23 +50,21 @@ public class ServerThreadSEG implements Runnable {
                 byte[] receivedData = byteArrayOutputStream.toByteArray();
                 Bitmap receiveBitmap = BitmapFactory.decodeByteArray(receivedData, 0, receivedData.length);
 
-                // UI 업데이트를 메인 스레드에서 처리
                 uiHandler.post(() -> {
-                    if (receiveBitmap != null){
-                        device2_state.setText("on");
-                    } else {
+                    if (receiveBitmap == null){
                         device2_state.setText("off");
+                    } else {
+                        device2_state.setText("on");
                     }
                 });
 
-                // 메인 액티비티로 Bitmap 전달
                 Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
                 uiHandler.sendMessage(message);
 
-                // 클라이언트 소켓 닫기
                 clientSocket.close();
             }
         } catch (IOException e) {
+            device2_state.setText("off");
             e.printStackTrace();
         }
     }
