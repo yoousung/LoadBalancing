@@ -1,29 +1,23 @@
 package com.example.demoproject_master;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,31 +28,23 @@ public class MainActivity extends AppCompatActivity {
     private Button scanButton, cameraButton;
 //    private Button exitButton;
     private ArrayList<String> ip_list;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        setPermission();
         initViews();
         view_connect_device();
 
         // 검색 버튼 클릭시 -> 현재 연결된 핸드폰 ip추출
-        scanButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                clearArpCache();
-                view_connect_device();
-            }
+        scanButton.setOnClickListener(view -> {
+            clearArpCache();
+            view_connect_device();
         });
 
         // 카메라 버튼 클릭시 -> CameraPreview 클래스 시작
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                start_CameraPreviewActivity(ip_list);
-            }
-        });
+        cameraButton.setOnClickListener(view -> start_CameraPreviewActivity(ip_list));
 
 //        // 재시작 버튼 클릭시 -> 앱 재시작
 //        exitButton.setOnClickListener(new View.OnClickListener() {
@@ -77,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // View초기설정
-    private void initViews(){
+    private void initViews() {
         connectedDevices = findViewById(R.id.connectedDevices);
         scanButton = findViewById(R.id.scan_button);
         cameraButton = findViewById(R.id.camera_button);
@@ -133,27 +119,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // TedPermission 권한 체크
-    private void setPermission() {
-        PermissionListener permission = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() { // 설정해 놓은 위험권한들이 허용 되었을 경우
-                Toast.makeText(MainActivity.this, "Permission allowed.",Toast.LENGTH_SHORT).show();
-            }
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) { // 설정해 놓은 위험권한들이 허용되지 않았을 경우우
-                Toast.makeText(MainActivity.this, "Permission denied.",Toast.LENGTH_SHORT).show();
-            }
-        };
-        TedPermission.with(MainActivity.this)
-                .setPermissionListener(permission)
-                .setRationaleMessage("위치정보와 카메라 권한이 필요합니다.")
-                .setDeniedMessage("권한을 거부하시면 해당 기능을 사용할 수 없습니다. 설정에서 권한을 허용해주세요.")
-                // 어느 권한을 허용할 것인지 설정
-                .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
-    }
-
     // 핫스팟으로 연결된 핸드폰의 IP주소
     private ArrayList<String> getConnectedDevices() {
         ArrayList<String> ip_list = new ArrayList<>();
@@ -192,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         return ip_list;
     }
+
     private InetAddress intToInetAddress(int hostAddress) {
         byte[] addressBytes = {(byte) (0xff & hostAddress), (byte) (0xff & (hostAddress >> 8)), (byte) (0xff & (hostAddress >> 16)), (byte) (0xff & (hostAddress >> 24))};
 
@@ -201,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
             throw new AssertionError();
         }
     }
+
     public void clearArpCache() {
         try {
             // ARP 테이블을 지우는 명령어를 실행
