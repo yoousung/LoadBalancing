@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -29,6 +30,7 @@ public class ServerThreadSEG implements Runnable {
         this.device2_state = device2_state;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
@@ -61,7 +63,6 @@ public class ServerThreadSEG implements Runnable {
 
                 Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
                 uiHandler.sendMessage(message);
-
             }
         } catch (IOException e) {
             device2_state.setText("off");

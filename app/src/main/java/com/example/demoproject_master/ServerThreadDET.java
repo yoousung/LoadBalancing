@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -29,6 +30,7 @@ public class ServerThreadDET implements Runnable {
         this.device1_state = device1_state;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void run(){
         try {
@@ -43,6 +45,7 @@ public class ServerThreadDET implements Runnable {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
                 int bytesRead;
+
                 while ((bytesRead = inFromClient.read(data)) != -1) {
                     byteArrayOutputStream.write(data, 0, bytesRead);
                 }
