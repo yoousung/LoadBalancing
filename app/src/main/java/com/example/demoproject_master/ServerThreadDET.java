@@ -33,7 +33,7 @@ public class ServerThreadDET implements Runnable {
     @Override
     public void run(){
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
-            while (true) {
+            while (!Thread.interrupted()) {
                 Socket clientSocket = serverSocket.accept();
 
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());

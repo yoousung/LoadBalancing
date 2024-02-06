@@ -29,7 +29,7 @@ public class CameraPreview extends AppCompatActivity {
     private boolean toggleSeg = false;
     private boolean toggleDet = false;
     private boolean toggleDet2 = false;
-
+    private Thread serverThread, serverThread2, serverThread3;
     private final Ncnn model = new Ncnn();
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
@@ -89,15 +89,15 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        Thread serverThread = new Thread(new ServerThreadDET(3001, uiHandler,device1_state));
+        serverThread = new Thread(new ServerThreadDET(3001, uiHandler, device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler,device2_state));
+        serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler, device2_state));
         serverThread2.start();
 
         // Device3 (DET)
-        Thread serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler,device3_state));
+        serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler, device3_state));
         serverThread3.start();
 
         // set the camera preview state
@@ -146,6 +146,22 @@ public class CameraPreview extends AppCompatActivity {
 
             setupCustomSurfaceListener();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        serverThread.interrupt();
+        serverThread2.interrupt();
+        serverThread3.interrupt();
+
+        serverThread = null;
+        serverThread2 = null;
+        serverThread3 = null;
+
+        DataHolderDET.getInstance().setBboxdata(null);
+        DataHolderSEG.getInstance().setSegdata(null);
     }
 
     private void updateButtonText(Button button, String label, boolean isToggleOn) {
