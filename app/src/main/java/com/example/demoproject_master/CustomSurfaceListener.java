@@ -58,6 +58,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        executorService.shutdownNow();
         return false;
     }
 
