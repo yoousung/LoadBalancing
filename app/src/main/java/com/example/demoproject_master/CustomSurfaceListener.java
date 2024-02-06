@@ -79,12 +79,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
                 StateSingleton.waitInterval = true;
                 executorService.submit(new SocketThread(currentbmp, ip_list));
             }
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    StateSingleton.waitInterval = false;
-                }
-            }, interval);
+            new Handler().postDelayed(() -> StateSingleton.waitInterval = false, interval);
         }
         Bitmap newbitmap;
         if (opt[0] | opt[1] | opt[2]) {

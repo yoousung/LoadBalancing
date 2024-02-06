@@ -3,7 +3,6 @@ package com.example.demoproject_master;
 import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.TextView;
 
 import java.io.BufferedInputStream;
@@ -60,7 +59,6 @@ public class ServerThreadDET implements Runnable {
                 uiHandler.sendMessage(message);
             }
         } catch (IOException e) {
-            device1_state.setText("off");
             e.printStackTrace();
         }
     }

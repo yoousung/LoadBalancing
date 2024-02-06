@@ -166,7 +166,6 @@ JNICALL
 Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
                                                              jobject thiz,
                                                              jobject assetManager,
-                                                             jint modelid,
                                                              jint cpugpu) {
     AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
 

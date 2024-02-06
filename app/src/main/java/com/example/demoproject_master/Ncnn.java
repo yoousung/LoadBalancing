@@ -6,7 +6,6 @@ import android.widget.ImageView;
 
 public class Ncnn {
     public native boolean loadModel(AssetManager mgr,
-                                    int modelid,
                                     int cpugpu);
 
     // det + seg from blackbox

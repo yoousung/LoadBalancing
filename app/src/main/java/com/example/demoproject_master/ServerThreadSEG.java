@@ -65,7 +65,6 @@ public class ServerThreadSEG implements Runnable {
                 uiHandler.sendMessage(message);
             }
         } catch (IOException e) {
-            device2_state.setText("off");
             e.printStackTrace();
         }
     }

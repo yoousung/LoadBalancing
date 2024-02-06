@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +31,6 @@ public class CameraPreview extends AppCompatActivity {
     private boolean toggleDet2 = false;
 
     private final Ncnn model = new Ncnn();
-    private int current_model = 0;
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
 
@@ -66,7 +66,7 @@ public class CameraPreview extends AppCompatActivity {
                 device1_state, device2_state, device3_state,
                 ip_data));
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,14 +102,7 @@ public class CameraPreview extends AppCompatActivity {
 
         // set the camera preview state
         this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
-                cameraHandler,
-                textureView,
-                model,
-                toggleSeg, toggleDet, toggleDet2,
-                bdbox,
-                device1_state, device2_state, device3_state,
-                ip_data));
+        setupCustomSurfaceListener();
 
 
         updateButtonText(toggleSegButton, "Seg", toggleSeg);
@@ -119,51 +112,39 @@ public class CameraPreview extends AppCompatActivity {
         updateButtonText(startBtn, "Send", StateSingleton.runScanning);
 
         // stop/start the client to server bytes transfer
-        this.startBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StateSingleton.runScanning = !StateSingleton.runScanning;
-                updateButtonText(startBtn, "Send", StateSingleton.runScanning);
-            }
+        this.startBtn.setOnClickListener(view -> {
+            StateSingleton.runScanning = !StateSingleton.runScanning;
+            updateButtonText(startBtn, "Send", StateSingleton.runScanning);
         });
 
         // Seg Button
-        this.toggleSegButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleSeg = !toggleSeg;
-                toggleSegButton.setEnabled(true);
+        this.toggleSegButton.setOnClickListener(v -> {
+            toggleSeg = !toggleSeg;
+            toggleSegButton.setEnabled(true);
 
-                updateButtonText(toggleSegButton, "Seg", toggleSeg);
+            updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
 
         // Det Button
-        this.toggleDetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDet = !toggleDet;
-                toggleDetButton.setEnabled(true);
+        this.toggleDetButton.setOnClickListener(v -> {
+            toggleDet = !toggleDet;
+            toggleDetButton.setEnabled(true);
 
-                updateButtonText(toggleDetButton, "Det", toggleDet);
+            updateButtonText(toggleDetButton, "Det", toggleDet);
 
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
 
         // Det2 Button
-        this.toggleDet2Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDet2 = !toggleDet2;
-                toggleDet2Button.setEnabled(true);
+        this.toggleDet2Button.setOnClickListener(v -> {
+            toggleDet2 = !toggleDet2;
+            toggleDet2Button.setEnabled(true);
 
-                updateButtonText(toggleDet2Button, "Det", toggleDet2);
+            updateButtonText(toggleDet2Button, "Det", toggleDet2);
 
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
     }
 
@@ -173,7 +154,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
+        if (!model.loadModel(getAssets(), current_cpugpu))
             Log.e(TAG, "model load failed");
         Log.e(TAG, "model load success");
     }
