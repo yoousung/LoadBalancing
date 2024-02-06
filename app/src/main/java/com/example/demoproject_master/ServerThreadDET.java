@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -29,20 +30,18 @@ public class ServerThreadDET implements Runnable {
         this.device1_state = device1_state;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void run(){
-        try {
-            ServerSocket serverSocket = new ServerSocket(serverPort);
-            Log.i("ServerThread", "Server listening on port " + serverPort);
-
+        try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                Log.i("ServerThread", "Client connected: " + clientSocket.getInetAddress());
 
                 BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
                 int bytesRead;
+
                 while ((bytesRead = inFromClient.read(data)) != -1) {
                     byteArrayOutputStream.write(data, 0, bytesRead);
                 }
@@ -59,8 +58,6 @@ public class ServerThreadDET implements Runnable {
 
                 Message message = uiHandler.obtainMessage(MESSAGE_DET_DATA, receivedText);
                 uiHandler.sendMessage(message);
-
-                clientSocket.close();
             }
         } catch (IOException e) {
             device1_state.setText("off");
