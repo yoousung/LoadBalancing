@@ -66,7 +66,8 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) { }
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+    }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
@@ -86,9 +87,9 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         opt[2] = toggleDet2;
 
         // 이미지 전송 버튼 start일때 데이터 전송
-        if(!StateSingleton.waitInterval && StateSingleton.runScanning) {
+        if (!StateSingleton.waitInterval && StateSingleton.runScanning) {
             // Device available
-            if(ip_list.size() != 0){
+            if (ip_list.size() != 0) {
                 StateSingleton.waitInterval = true;
                 executorService.submit(new SocketThread(currentbmp, ip_list));
             }
@@ -99,8 +100,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             model.homogeneousComputing(bdbox, currentbmp, opt);
             Drawable drawable = bdbox.getDrawable();
             newbitmap = ((BitmapDrawable) drawable).getBitmap();
-        }
-        else {
+        } else {
             newbitmap = currentbmp;
         }
 
@@ -108,12 +108,12 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         String bboxdata = null;
         Bitmap segbitmap = null;
         // 2-1) det
-        if(device1_state.getText().equals("on"))
+        if (device1_state.getText().equals("on"))
             bboxdata = DataHolderDET.getInstance().getBboxdata();
-        if(Objects.equals(bboxdata, " "))
+        if (Objects.equals(bboxdata, " "))
             bboxdata = null;
         // 2-2) seg
-        if(device2_state.getText().equals("on"))
+        if (device2_state.getText().equals("on"))
             segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
