@@ -35,11 +35,11 @@ public class CameraPreview extends AppCompatActivity {
     private ImageView bdbox;
 
     private TextView device1_state, device2_state, device3_state;
-
+    private CustomSurfaceListener customSurfaceListener = null;
     private ArrayList<String> ip_data;
 
     // 송수신 데이터 자바내 데이터 송수신
-    private Handler uiHandler = new Handler(Looper.getMainLooper()) {
+    private final Handler uiHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -57,14 +57,22 @@ public class CameraPreview extends AppCompatActivity {
     };
 
     private void setupCustomSurfaceListener() {
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
-                cameraHandler,
-                textureView,
-                model,
-                toggleSeg, toggleDet, toggleDet2,
-                bdbox,
-                device1_state, device2_state, device3_state,
-                ip_data));
+        if (customSurfaceListener == null) {
+            customSurfaceListener = new CustomSurfaceListener(
+                    cameraHandler,
+                    textureView,
+                    model,
+                    toggleSeg, toggleDet, toggleDet2,
+                    bdbox,
+                    device1_state, device2_state, device3_state,
+                    ip_data);
+            textureView.setSurfaceTextureListener(customSurfaceListener);
+        } else {
+            customSurfaceListener.updateVariables(
+                    toggleSeg, toggleDet, toggleDet2,
+                    device1_state, device2_state, device3_state,
+                    ip_data);
+        }
     }
 
     @Override
@@ -121,7 +129,6 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleSegButton.setOnClickListener(v -> {
             toggleSeg = !toggleSeg;
             toggleSegButton.setEnabled(true);
-
             updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
             setupCustomSurfaceListener();
@@ -131,7 +138,6 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleDetButton.setOnClickListener(v -> {
             toggleDet = !toggleDet;
             toggleDetButton.setEnabled(true);
-
             updateButtonText(toggleDetButton, "Det", toggleDet);
 
             setupCustomSurfaceListener();
@@ -141,7 +147,6 @@ public class CameraPreview extends AppCompatActivity {
         this.toggleDet2Button.setOnClickListener(v -> {
             toggleDet2 = !toggleDet2;
             toggleDet2Button.setEnabled(true);
-
             updateButtonText(toggleDet2Button, "Det", toggleDet2);
 
             setupCustomSurfaceListener();
