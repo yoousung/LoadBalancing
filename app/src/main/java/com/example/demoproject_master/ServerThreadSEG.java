@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.example.demoproject.Seg.ImageData;
@@ -57,14 +56,14 @@ public class ServerThreadSEG implements Runnable {
 
                         // Get the image data from the protobuf message
                         byte[] imageBytes = imageDataProto.getImageData().toByteArray();
+                        boolean run = imageDataProto.getRun();
                         Bitmap receiveBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
 
                         uiHandler.post(() -> {
-                            if (receiveBitmap == null) {
-                                device2_state.setText("off");
-                            } else {
+                            if (run)
                                 device2_state.setText("on");
-                            }
+                            else
+                                device2_state.setText("off");
                         });
 
                         Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
