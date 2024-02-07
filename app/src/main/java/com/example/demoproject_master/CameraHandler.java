@@ -45,7 +45,7 @@ public class CameraHandler {
 
     public void openCamera() {
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        Log.e(StateSingleton.getInstance().TAG, "Camera was opened!");
+//        Log.e(StateSingleton.getInstance().TAG, "Camera was opened!");
         try {
             // Configure the camera stream
             cameraId = manager.getCameraIdList()[0];
@@ -69,7 +69,7 @@ public class CameraHandler {
         @Override
         public void onOpened(CameraDevice camera) {
             //This is called when the camera is open
-            Log.e(StateSingleton.getInstance().TAG, "On camera callback was called, so the preview can be shown.");
+//            Log.e(StateSingleton.getInstance().TAG, "On camera callback was called, so the preview can be shown.");
             cameraDevice = camera;
             createCameraPreview();
         }
@@ -112,7 +112,7 @@ public class CameraHandler {
                 }
             }, null);
 
-            Log.e(StateSingleton.getInstance().TAG, "Success createCameraPreview");
+//            Log.e(StateSingleton.getInstance().TAG, "Success createCameraPreview");
 
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -121,7 +121,7 @@ public class CameraHandler {
 
     protected void updatePreview() {
         if (null == cameraDevice) {
-            Log.e(StateSingleton.getInstance().TAG, "Update camera preview ran on an error!");
+//            Log.e(StateSingleton.getInstance().TAG, "Update camera preview ran on an error!");
         }
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {

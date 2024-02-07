@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 // SEG 소켓 통신
 // Device2 socket (SEG)
@@ -23,6 +25,7 @@ public class ServerThreadSEG implements Runnable {
     private final TextView device2_state;
     private final int serverPort;
     public static final int MESSAGE_SEG_DATA = 2;
+    ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state) {
         this.serverPort = serverPort;
@@ -34,39 +37,48 @@ public class ServerThreadSEG implements Runnable {
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
-            while (true) {
+            while (!Thread.interrupted()) {
                 Socket clientSocket = serverSocket.accept();
-                BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                byte[] data = new byte[1024]; // 1024 = 1KB 크기 버퍼
-                int bytesRead;
 
-                while ((bytesRead = inFromClient.read(data)) != -1) {
-                    byteArrayOutputStream.write(data, 0, bytesRead);
-                }
-                byte[] receivedData = byteArrayOutputStream.toByteArray();
+                executorService.submit(() -> {
+                    try (BufferedInputStream inFromClient = new BufferedInputStream(clientSocket.getInputStream());
+                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                        byte[] data = new byte[1];
+                        int bytesRead;
 
-                // Parse the protobuf message
-                ImageData imageDataProto = ImageData.parseFrom(receivedData);
+                        while ((bytesRead = inFromClient.read(data)) != -1) {
+                            byteArrayOutputStream.write(data, 0, bytesRead);
+                        }
+                        byte[] receivedData = byteArrayOutputStream.toByteArray();
 
-                // Get the image data from the protobuf message
-                byte[] imageBytes = imageDataProto.getImageData().toByteArray();
-                Bitmap receiveBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                        // Parse the protobuf message
+                        ImageData imageDataProto = ImageData.parseFrom(receivedData);
 
-                uiHandler.post(() -> {
-                    if (receiveBitmap == null) {
-                        device2_state.setText("off");
-                    } else {
-                        device2_state.setText("on");
+                        // Get the image data from the protobuf message
+                        byte[] imageBytes = imageDataProto.getImageData().toByteArray();
+                        boolean run = imageDataProto.getRun();
+                        Bitmap receiveBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                        uiHandler.post(() -> {
+                            if (run)
+                                device2_state.setText("on");
+                            else
+                                device2_state.setText("off");
+                        });
+
+                        Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
+                        uiHandler.sendMessage(message);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 });
 
-                Message message = uiHandler.obtainMessage(MESSAGE_SEG_DATA, receiveBitmap);
-                uiHandler.sendMessage(message);
             }
         } catch (IOException e) {
-            device2_state.setText("off");
             e.printStackTrace();
+        } finally {
+            executorService.shutdownNow();
         }
     }
 }

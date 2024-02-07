@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,18 +30,17 @@ public class CameraPreview extends AppCompatActivity {
     private boolean toggleSeg = false;
     private boolean toggleDet = false;
     private boolean toggleDet2 = false;
-
+    private Thread serverThread, serverThread2, serverThread3;
     private final Ncnn model = new Ncnn();
-    private int current_model = 0;
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
 
     private TextView device1_state, device2_state, device3_state;
-
+    private CustomSurfaceListener customSurfaceListener = null;
     private ArrayList<String> ip_data;
 
     // 송수신 데이터 자바내 데이터 송수신
-    private Handler uiHandler = new Handler(Looper.getMainLooper()) {
+    private final Handler uiHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -57,20 +58,29 @@ public class CameraPreview extends AppCompatActivity {
     };
 
     private void setupCustomSurfaceListener() {
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
-                cameraHandler,
-                textureView,
-                model,
-                toggleSeg, toggleDet, toggleDet2,
-                bdbox,
-                device1_state, device2_state, device3_state,
-                ip_data));
+        if (customSurfaceListener == null) {
+            customSurfaceListener = new CustomSurfaceListener(
+                    cameraHandler,
+                    textureView,
+                    model,
+                    toggleSeg, toggleDet, toggleDet2,
+                    bdbox,
+                    device1_state, device2_state, device3_state,
+                    ip_data);
+            textureView.setSurfaceTextureListener(customSurfaceListener);
+        } else {
+            customSurfaceListener.updateVariables(
+                    toggleSeg, toggleDet, toggleDet2,
+                    device1_state, device2_state, device3_state,
+                    ip_data);
+        }
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_preview);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         textureView = findViewById(R.id.camera_view);
         assert textureView != null;
@@ -89,27 +99,20 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        Thread serverThread = new Thread(new ServerThreadDET(3001, uiHandler,device1_state));
+        serverThread = new Thread(new ServerThreadDET(3001, uiHandler, device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        Thread serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler,device2_state));
+        serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler, device2_state));
         serverThread2.start();
 
         // Device3 (DET)
-        Thread serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler,device3_state));
+        serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler, device3_state));
         serverThread3.start();
 
         // set the camera preview state
         this.cameraHandler = new CameraHandler(this, getApplicationContext(), textureView);
-        textureView.setSurfaceTextureListener(new CustomSurfaceListener(
-                cameraHandler,
-                textureView,
-                model,
-                toggleSeg, toggleDet, toggleDet2,
-                bdbox,
-                device1_state, device2_state, device3_state,
-                ip_data));
+        setupCustomSurfaceListener();
 
 
         updateButtonText(toggleSegButton, "Seg", toggleSeg);
@@ -119,52 +122,53 @@ public class CameraPreview extends AppCompatActivity {
         updateButtonText(startBtn, "Send", StateSingleton.runScanning);
 
         // stop/start the client to server bytes transfer
-        this.startBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StateSingleton.runScanning = !StateSingleton.runScanning;
-                updateButtonText(startBtn, "Send", StateSingleton.runScanning);
-            }
+        this.startBtn.setOnClickListener(view -> {
+            StateSingleton.runScanning = !StateSingleton.runScanning;
+            updateButtonText(startBtn, "Send", StateSingleton.runScanning);
         });
 
         // Seg Button
-        this.toggleSegButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleSeg = !toggleSeg;
-                toggleSegButton.setEnabled(true);
+        this.toggleSegButton.setOnClickListener(v -> {
+            toggleSeg = !toggleSeg;
+            toggleSegButton.setEnabled(true);
+            updateButtonText(toggleSegButton, "Seg", toggleSeg);
 
-                updateButtonText(toggleSegButton, "Seg", toggleSeg);
-
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
 
         // Det Button
-        this.toggleDetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDet = !toggleDet;
-                toggleDetButton.setEnabled(true);
+        this.toggleDetButton.setOnClickListener(v -> {
+            toggleDet = !toggleDet;
+            toggleDetButton.setEnabled(true);
+            updateButtonText(toggleDetButton, "Det", toggleDet);
 
-                updateButtonText(toggleDetButton, "Det", toggleDet);
-
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
 
         // Det2 Button
-        this.toggleDet2Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDet2 = !toggleDet2;
-                toggleDet2Button.setEnabled(true);
+        this.toggleDet2Button.setOnClickListener(v -> {
+            toggleDet2 = !toggleDet2;
+            toggleDet2Button.setEnabled(true);
+            updateButtonText(toggleDet2Button, "Det", toggleDet2);
 
-                updateButtonText(toggleDet2Button, "Det", toggleDet2);
-
-                setupCustomSurfaceListener();
-            }
+            setupCustomSurfaceListener();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        serverThread.interrupt();
+        serverThread2.interrupt();
+        serverThread3.interrupt();
+
+        serverThread = null;
+        serverThread2 = null;
+        serverThread3 = null;
+
+        DataHolderDET.getInstance().setBboxdata(null);
+        DataHolderSEG.getInstance().setSegdata(null);
     }
 
     private void updateButtonText(Button button, String label, boolean isToggleOn) {
@@ -173,7 +177,7 @@ public class CameraPreview extends AppCompatActivity {
     }
 
     private void reload() {
-        if (!model.loadModel(getAssets(), current_model, current_cpugpu))
+        if (!model.loadModel(getAssets(), current_cpugpu))
             Log.e(TAG, "model load failed");
         Log.e(TAG, "model load success");
     }

@@ -22,10 +22,10 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
     protected boolean wait = false;
     protected int interval = 50; // 이미지 데이터 전송 딜레이 설정
     private final Ncnn model;
-    private final boolean toggleSeg, toggleDet, toggleDet2;
+    private boolean toggleSeg, toggleDet, toggleDet2;
     private final ImageView bdbox;
-    private final TextView device1_state, device2_state, device3_state;
-    private final ArrayList<String> ip_list;
+    private TextView device1_state, device2_state, device3_state;
+    private ArrayList<String> ip_list;
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public CustomSurfaceListener(CameraHandler cameraHandler,
@@ -48,16 +48,30 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         this.ip_list = ip_list;
     }
 
+    public void updateVariables(boolean toggleSeg, boolean toggleDet, boolean toggleDet2,
+                                TextView device1_state, TextView device2_state, TextView device3_state,
+                                ArrayList<String> ip_list) {
+        this.toggleSeg = toggleSeg;
+        this.toggleDet = toggleDet;
+        this.toggleDet2 = toggleDet2;
+        this.device1_state = device1_state;
+        this.device2_state = device2_state;
+        this.device3_state = device3_state;
+        this.ip_list = ip_list;
+    }
+
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
         this.cameraHandler.openCamera();
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) { }
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+    }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        executorService.shutdownNow();
         return false;
     }
 
@@ -73,26 +87,20 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         opt[2] = toggleDet2;
 
         // 이미지 전송 버튼 start일때 데이터 전송
-        if(!StateSingleton.waitInterval && StateSingleton.runScanning) {
+        if (!StateSingleton.waitInterval && StateSingleton.runScanning) {
             // Device available
-            if(ip_list.size() != 0){
+            if (ip_list.size() != 0) {
                 StateSingleton.waitInterval = true;
                 executorService.submit(new SocketThread(currentbmp, ip_list));
             }
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    StateSingleton.waitInterval = false;
-                }
-            }, interval);
+            new Handler().postDelayed(() -> StateSingleton.waitInterval = false, interval);
         }
         Bitmap newbitmap;
         if (opt[0] | opt[1] | opt[2]) {
             model.homogeneousComputing(bdbox, currentbmp, opt);
             Drawable drawable = bdbox.getDrawable();
             newbitmap = ((BitmapDrawable) drawable).getBitmap();
-        }
-        else {
+        } else {
             newbitmap = currentbmp;
         }
 
@@ -100,12 +108,12 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
         String bboxdata = null;
         Bitmap segbitmap = null;
         // 2-1) det
-        if(device1_state.getText().equals("on"))
+        if (device1_state.getText().equals("on"))
             bboxdata = DataHolderDET.getInstance().getBboxdata();
-        if(Objects.equals(bboxdata, " "))
+        if (Objects.equals(bboxdata, " "))
             bboxdata = null;
         // 2-2) seg
-        if(device2_state.getText().equals("on"))
+        if (device2_state.getText().equals("on"))
             segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
