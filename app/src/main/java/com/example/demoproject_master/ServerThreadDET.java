@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.widget.TextView;
 
+import com.example.demoproject.Det.Bbox;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,14 +50,19 @@ public class ServerThreadDET implements Runnable {
                             byteArrayOutputStream.write(data, 0, bytesRead);
                         }
                         byte[] receivedData = byteArrayOutputStream.toByteArray();
-                        String receivedText = new String(receivedData, StandardCharsets.UTF_8);
+
+                        // Parse the protobuf message
+                        Bbox bbox = Bbox.parseFrom(receivedData);
+
+                        // Get the image data from the protobuf message
+                        String receivedText = bbox.getBbox();
+                        boolean run = bbox.getRun();
 
                         uiHandler.post(() -> {
-                            if (receivedText.equals("off")) {
-                                device1_state.setText("off");
-                            } else {
+                            if (run)
                                 device1_state.setText("on");
-                            }
+                            else
+                                device1_state.setText("off");
                         });
 
                         Message message = uiHandler.obtainMessage(MESSAGE_DET_DATA, receivedText);
