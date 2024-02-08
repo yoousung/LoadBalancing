@@ -530,7 +530,7 @@ int Yolov8::draw(cv::Mat& rgb, cv::Mat mask)
                 image_ptr[1] = cv::saturate_cast<uchar>(image_ptr[1] * 0.5 + color[1] * 0.5);
                 image_ptr[2] = cv::saturate_cast<uchar>(image_ptr[2] * 0.5 + color[0] * 0.5);
             }
-            if (y == static_cast<int>((rgb.rows * 2) / 3) &&
+            if (y == static_cast<int>((rgb.rows * 7) / 8) &&
                 x > static_cast<int>((rgb.cols * 1) / 3) &&
                 x < static_cast<int>((rgb.cols * 2) / 3)) {
                 std::fill_n(image_ptr, 3, 255);
