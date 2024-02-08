@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class SocketThread implements Runnable {
+public class Sender implements Runnable {
     private final ArrayList<String> iplist;
     private final Bitmap bmp;
 
-    public SocketThread(Bitmap bmp, ArrayList<String> ip_list) {
+    public Sender(Bitmap bmp, ArrayList<String> ip_list) {
         this.bmp = bmp;
         this.iplist = ip_list;
     }

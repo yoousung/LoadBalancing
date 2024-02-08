@@ -163,7 +163,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM * vm, void * reserved) {
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
+Java_com_example_demoproject_1master_NCNN_loadModel(JNIEnv *env,
                                                              jobject thiz,
                                                              jobject assetManager,
                                                              jint cpugpu) {
@@ -193,7 +193,7 @@ Java_com_example_demoproject_1master_Ncnn_loadModel(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_homogeneousComputing(JNIEnv *env,
+Java_com_example_demoproject_1master_NCNN_homogeneousComputing(JNIEnv *env,
                   jobject thiz,
                   jobject imageView,
                   jobject bitmap,
@@ -261,7 +261,7 @@ Java_com_example_demoproject_1master_Ncnn_homogeneousComputing(JNIEnv *env,
 JNIEXPORT jboolean
 
 JNICALL
-Java_com_example_demoproject_1master_Ncnn_heterogeneousComputing(JNIEnv *env,
+Java_com_example_demoproject_1master_NCNN_heterogeneousComputing(JNIEnv *env,
                                                     jobject thiz,
                                                     jobject image_view,
                                                     jobject bitmap,

@@ -7,7 +7,6 @@ public class DataHolderSEG {
     private Bitmap segData;
 
     private DataHolderSEG() {
-        // private 생성자로 싱글톤 패턴 유지
     }
 
     public static DataHolderSEG getInstance() {
