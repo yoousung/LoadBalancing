@@ -1,6 +1,8 @@
 package com.example.demoproject_master;
 
-public class DataHolderDET {
+import android.graphics.Bitmap;
+
+class DataHolderDET {
     private static DataHolderDET instance;
     private String bboxdata;
 
@@ -20,5 +22,25 @@ public class DataHolderDET {
 
     public String getBboxdata() {
         return bboxdata;
+    }
+}
+
+class DataHolderSEG {
+    private static final DataHolderSEG instance = new DataHolderSEG();
+    private Bitmap segData;
+
+    private DataHolderSEG() {
+    }
+
+    public static DataHolderSEG getInstance() {
+        return instance;
+    }
+
+    public void setSegdata(Bitmap segData) {
+        this.segData = segData;
+    }
+
+    public Bitmap getSegdata() {
+        return segData;
     }
 }
