@@ -1,5 +1,6 @@
 package com.example.demoproject_master;
 
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
@@ -116,5 +117,25 @@ public class ProcessAI implements TextureView.SurfaceTextureListener {
             segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
+    }
+}
+
+class NCNN {
+    public native boolean loadModel(AssetManager mgr,
+                                    int cpugpu);
+
+    // det + seg from blackbox
+    public native boolean homogeneousComputing(ImageView imageView,
+                                               Bitmap bitmap,
+                                               boolean[] opt);
+
+    // det + seg from phone
+    public native boolean heterogeneousComputing(ImageView imageView,
+                                                 Bitmap bitmap,
+                                                 String dataDet,
+                                                 Bitmap dataSeg);
+
+    static {
+        System.loadLibrary("ncnntotal");
     }
 }
