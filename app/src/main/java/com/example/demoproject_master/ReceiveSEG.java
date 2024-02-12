@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 
 // SEG 소켓 통신
 // Device2 socket (SEG)
-public class ServerThreadSEG implements Runnable {
+public class ReceiveSEG implements Runnable {
 
     private final Handler uiHandler;
     private final TextView device2_state;
@@ -27,7 +27,7 @@ public class ServerThreadSEG implements Runnable {
     public static final int MESSAGE_SEG_DATA = 2;
     ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-    public ServerThreadSEG(int serverPort, Handler uiHandler, TextView device2_state) {
+    public ReceiveSEG(int serverPort, Handler uiHandler, TextView device2_state) {
         this.serverPort = serverPort;
         this.uiHandler = uiHandler;
         this.device2_state = device2_state;

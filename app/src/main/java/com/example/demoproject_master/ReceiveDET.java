@@ -12,13 +12,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 // DET 소켓 통신
 // Device1 socket (DET)
-public class ServerThreadDET implements Runnable {
+public class ReceiveDET implements Runnable {
 
     private final Handler uiHandler;
     private final TextView device1_state;
@@ -27,7 +26,7 @@ public class ServerThreadDET implements Runnable {
 
     ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-    public ServerThreadDET(int serverPort, Handler uiHandler, TextView device1_state) {
+    public ReceiveDET(int serverPort, Handler uiHandler, TextView device1_state) {
         this.serverPort = serverPort;
         this.uiHandler = uiHandler;
         this.device1_state = device1_state;

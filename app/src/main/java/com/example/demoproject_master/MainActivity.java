@@ -25,8 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private final List<LinearLayout> linearLayoutDevices = new ArrayList<>();
     private final List<TextView> deviceIps = new ArrayList<>();
     private TextView connectedDevices;
-    private Button scanButton, cameraButton;
-//    private Button exitButton;
+    //    private Button exitButton;
     private ArrayList<String> ip_list;
 
     @Override
@@ -34,7 +33,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initViews();
+        connectedDevices = findViewById(R.id.connectedDevices);
+        Button scanButton = findViewById(R.id.scan_button);
+        Button cameraButton = findViewById(R.id.camera_button);
+//        exitButton = findViewById(R.id.exit_button);
+
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device1));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
+        linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
+
+        deviceIps.add(findViewById(R.id.connect_Device1));
+        deviceIps.add(findViewById(R.id.connect_Device2));
+        deviceIps.add(findViewById(R.id.connect_Device3));
+
+        for (LinearLayout linearLayout : linearLayoutDevices)
+            linearLayout.setVisibility(View.GONE);
+
         view_connect_device();
 
         // 검색 버튼 클릭시 -> 현재 연결된 핸드폰 ip추출
@@ -44,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 카메라 버튼 클릭시 -> CameraPreview 클래스 시작
-        cameraButton.setOnClickListener(view -> start_CameraPreviewActivity(ip_list));
+        cameraButton.setOnClickListener(view -> start_CameraPreview(ip_list));
 
 //        // 재시작 버튼 클릭시 -> 앱 재시작
 //        exitButton.setOnClickListener(new View.OnClickListener() {
@@ -62,27 +76,8 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
-    // View초기설정
-    private void initViews() {
-        connectedDevices = findViewById(R.id.connectedDevices);
-        scanButton = findViewById(R.id.scan_button);
-        cameraButton = findViewById(R.id.camera_button);
-//        exitButton = findViewById(R.id.exit_button);
-
-        linearLayoutDevices.add(findViewById(R.id.linearlayout_device1));
-        linearLayoutDevices.add(findViewById(R.id.linearlayout_device2));
-        linearLayoutDevices.add(findViewById(R.id.linearlayout_device3));
-
-        deviceIps.add(findViewById(R.id.connect_Device1));
-        deviceIps.add(findViewById(R.id.connect_Device2));
-        deviceIps.add(findViewById(R.id.connect_Device3));
-
-        for (LinearLayout linearLayout : linearLayoutDevices)
-            linearLayout.setVisibility(View.GONE);
-    }
-
     // 카메라 프리뷰 시작
-    private void start_CameraPreviewActivity(ArrayList<String> ip_list) {
+    private void start_CameraPreview(ArrayList<String> ip_list) {
         Intent intent = new Intent(MainActivity.this, CameraPreview.class);
         intent.putExtra("ip_data", ip_list);
         startActivity(intent);

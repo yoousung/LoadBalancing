@@ -1,6 +1,5 @@
 package com.example.demoproject_master;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,7 +7,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.TextureView;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,12 +29,12 @@ public class CameraPreview extends AppCompatActivity {
     private boolean toggleDet = false;
     private boolean toggleDet2 = false;
     private Thread serverThread, serverThread2, serverThread3;
-    private final Ncnn model = new Ncnn();
+    private final NCNN model = new NCNN();
     private int current_cpugpu = 1; // GPU사용
     private ImageView bdbox;
 
     private TextView device1_state, device2_state, device3_state;
-    private CustomSurfaceListener customSurfaceListener = null;
+    private ProcessAI customSurfaceListener = null;
     private ArrayList<String> ip_data;
 
     // 송수신 데이터 자바내 데이터 송수신
@@ -45,11 +43,11 @@ public class CameraPreview extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case ServerThreadDET.MESSAGE_DET_DATA:
+                case ReceiveDET.MESSAGE_DET_DATA:
                     String bboxdata = (String) msg.obj;
                     DataHolderDET.getInstance().setBboxdata(bboxdata);
                     break;
-                case ServerThreadSEG.MESSAGE_SEG_DATA:
+                case ReceiveSEG.MESSAGE_SEG_DATA:
                     Bitmap receivedBitmap = (Bitmap) msg.obj;
                     DataHolderSEG.getInstance().setSegdata(receivedBitmap);
                     break;
@@ -59,7 +57,7 @@ public class CameraPreview extends AppCompatActivity {
 
     private void setupCustomSurfaceListener() {
         if (customSurfaceListener == null) {
-            customSurfaceListener = new CustomSurfaceListener(
+            customSurfaceListener = new ProcessAI(
                     cameraHandler,
                     textureView,
                     model,
@@ -99,15 +97,15 @@ public class CameraPreview extends AppCompatActivity {
         reload();
 
         // Device1 (DET)
-        serverThread = new Thread(new ServerThreadDET(3001, uiHandler, device1_state));
+        serverThread = new Thread(new ReceiveDET(3001, uiHandler, device1_state));
         serverThread.start();
 
         // Device2 (SEG)
-        serverThread2 = new Thread(new ServerThreadSEG(3002, uiHandler, device2_state));
+        serverThread2 = new Thread(new ReceiveSEG(3002, uiHandler, device2_state));
         serverThread2.start();
 
         // Device3 (DET)
-        serverThread3 = new Thread(new ServerThreadDET(3003, uiHandler, device3_state));
+        serverThread3 = new Thread(new ReceiveDET(3003, uiHandler, device3_state));
         serverThread3.start();
 
         // set the camera preview state

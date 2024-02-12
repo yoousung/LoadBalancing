@@ -1,11 +1,11 @@
 package com.example.demoproject_master;
 
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.util.Log;
 import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,26 +15,26 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CustomSurfaceListener implements TextureView.SurfaceTextureListener {
+public class ProcessAI implements TextureView.SurfaceTextureListener {
 
     protected CameraHandler cameraHandler;
     protected TextureView textureView;
     protected boolean wait = false;
     protected int interval = 50; // 이미지 데이터 전송 딜레이 설정
-    private final Ncnn model;
+    private final NCNN model;
     private boolean toggleSeg, toggleDet, toggleDet2;
     private final ImageView bdbox;
     private TextView device1_state, device2_state, device3_state;
     private ArrayList<String> ip_list;
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-    public CustomSurfaceListener(CameraHandler cameraHandler,
-                                 TextureView textureView,
-                                 Ncnn model,
-                                 boolean toggleSeg, boolean toggleDet, boolean toggleDet2,
-                                 ImageView bdbox,
-                                 TextView device1_state, TextView device2_state, TextView device3_state,
-                                 ArrayList<String> ip_list) {
+    public ProcessAI(CameraHandler cameraHandler,
+                     TextureView textureView,
+                     NCNN model,
+                     boolean toggleSeg, boolean toggleDet, boolean toggleDet2,
+                     ImageView bdbox,
+                     TextView device1_state, TextView device2_state, TextView device3_state,
+                     ArrayList<String> ip_list) {
         this.cameraHandler = cameraHandler;
         this.textureView = textureView;
         this.model = model;
@@ -91,7 +91,7 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             // Device available
             if (ip_list.size() != 0) {
                 StateSingleton.waitInterval = true;
-                executorService.submit(new SocketThread(currentbmp, ip_list));
+                executorService.submit(new Sender(currentbmp, ip_list));
             }
             new Handler().postDelayed(() -> StateSingleton.waitInterval = false, interval);
         }
@@ -117,5 +117,25 @@ public class CustomSurfaceListener implements TextureView.SurfaceTextureListener
             segbitmap = DataHolderSEG.getInstance().getSegdata();
 
         model.heterogeneousComputing(bdbox, newbitmap, bboxdata, segbitmap);
+    }
+}
+
+class NCNN {
+    public native boolean loadModel(AssetManager mgr,
+                                    int cpugpu);
+
+    // det + seg from blackbox
+    public native boolean homogeneousComputing(ImageView imageView,
+                                               Bitmap bitmap,
+                                               boolean[] opt);
+
+    // det + seg from phone
+    public native boolean heterogeneousComputing(ImageView imageView,
+                                                 Bitmap bitmap,
+                                                 String dataDet,
+                                                 Bitmap dataSeg);
+
+    static {
+        System.loadLibrary("ncnntotal");
     }
 }
