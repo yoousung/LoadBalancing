@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         ip_list = null;
         ip_list = getConnectedDevices();
+        Collections.sort(ip_list);
         int deviceLength = ip_list.size();
 
         if (deviceLength == 0)
