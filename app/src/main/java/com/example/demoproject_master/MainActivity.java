@@ -93,7 +93,20 @@ public class MainActivity extends AppCompatActivity {
 
         ip_list = null;
         ip_list = getConnectedDevices();
-        Collections.sort(ip_list);
+        Collections.sort(ip_list, (ip1, ip2) -> {
+            String[] octets1 = ip1.split("\\.");
+            String[] octets2 = ip2.split("\\.");
+
+            for (int i = 0; i < 4; i++) {
+                int num1 = Integer.parseInt(octets1[i]);
+                int num2 = Integer.parseInt(octets2[i]);
+
+                if (num1 != num2) {
+                    return Integer.compare(num1, num2);
+                }
+            }
+            return 0;
+        });
         int deviceLength = ip_list.size();
 
         if (deviceLength == 0)
