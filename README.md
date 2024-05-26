@@ -3,20 +3,16 @@
 Master와 Server의 이기종 컴퓨팅 자원 공유를 통해 향상된 fps로 ADAS 구현
 
 - Master : [블랙박스](http://itempage3.auction.co.kr/DetailView.aspx?ItemNo=C522794645&frm3=V2)
-- Server : 갤럭시 시리즈
+- Server : 갤럭시 시리즈(S22, S7, S8)
 
-### Homogeneous computing
-
-|     | fps |     |
+|     | fps |  Homogeneous computing   |
 |:---:|:---:|:---:|
-| FCW |     |     |
-| LDW |     |     |
+| FCW | 9~10|  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/a625a39a-fed9-448d-848c-0c1bef885f7d)   |
+| LDW | 1~2 |  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/68fa1092-5d22-4caa-9233-429bce4cdf3d)   |
 
-### Heterogeneous computing
-
-|           | fps |     |
+|           | fps | Heterogeneous computing    |
 |:---------:|:---:|:---:|
-| FCW & LDW |     |     |
+| FCW<br>&<br>LDW |  20~   |  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/5ad99c34-876c-4e94-8271-2106833160c5)   |
 
 ### Setting
 
