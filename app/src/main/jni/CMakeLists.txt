@@ -2,10 +2,10 @@ project(nanodetncnn)
 
 cmake_minimum_required(VERSION 3.22.1)
 
-set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/opencv-mobile-4.5.1-android/sdk/native/jni)
+set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/opencv-mobile-4.8.0-android/sdk/native/jni)
 find_package(OpenCV REQUIRED core imgproc)
 
-set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20220420-android/${ANDROID_ABI}/lib/cmake/ncnn)
+set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20230816-android/${ANDROID_ABI}/lib/cmake/ncnn)
 find_package(ncnn REQUIRED)
 
 add_library(ncnntotal SHARED ncnn.cpp nanodet.cpp yolov8.cpp nanodet_tstl.cpp)

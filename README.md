@@ -1,41 +1,38 @@
 ## Load Balancing
-기존 [블랙박스](http://itempage3.auction.co.kr/DetailView.aspx?ItemNo=C522794645&frm3=V2)에 AI 탑재 후 이기종 컴퓨팅의 자원 공유를 통한 저가형 ADAS 구현
 
-|블랙박스(Master)|
-|:---:|
-|![IMG_0070](https://github.com/bert13069598/LoadBalancing/assets/89738612/c254fe30-5345-43aa-9277-acbd2141e1b6)|
-|갤럭시 s22(Server)|
-|![Screenshot_20231222_005406_DemoProject](https://github.com/bert13069598/LoadBalancing/assets/89738612/b11a6f93-9214-4b89-96e1-dba3c98910c2)|
+Master와 Server의 이기종 컴퓨팅 자원 공유를 통해 향상된 fps로 ADAS 구현
+
+- Master : [블랙박스](http://itempage3.auction.co.kr/DetailView.aspx?ItemNo=C522794645&frm3=V2)
+- Server : 갤럭시 시리즈(S22, S7, S8)
+
+|     | fps |  Homogeneous computing   |
+|:---:|:---:|:---:|
+| FCW | 9~10|  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/a625a39a-fed9-448d-848c-0c1bef885f7d)   |
+| LDW | 1~2 |  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/68fa1092-5d22-4caa-9233-429bce4cdf3d)   |
+
+|           | fps | Heterogeneous computing    |
+|:---------:|:---:|:---:|
+| FCW<br>&<br>LDW |  20~   |  ![](https://github.com/bert13069598/LoadBalancing/assets/89738612/5ad99c34-876c-4e94-8271-2106833160c5)   |
 
 ### Setting
+
 - Gradle JDK jbr-17
 - CMake 3.22.1
-- [opencv](https://github.com/nihui/opencv-mobile/releases)
-- [ncnn](https://github.com/Tencent/ncnn/releases)
+- [opencv-mobile-4.8.0-android.zip](https://github.com/nihui/opencv-mobile/releases/download/v18/opencv-mobile-4.8.0-android.zip)
+- [ncnn-20230816-android.zip](https://github.com/Tencent/ncnn/releases/download/20230816/ncnn-20230816-android.zip)
 
-CMakeLists.txt
-```cmake
-project(nanodetncnn)
+### IP setting
 
-cmake_minimum_required(VERSION 3.22.1)
+연결된 IP가 오름차순으로 정렬됨  
+순서에 맞게 각 휴대폰에 IP PORT_NUMBER를 설정
 
-set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/opencv-mobile-X.X.X-android/sdk/native/jni)
-find_package(OpenCV REQUIRED core imgproc)
-
-set(ncnn_DIR ${CMAKE_SOURCE_DIR}/ncnn-20XXXXXX-android/${ANDROID_ABI}/lib/cmake/ncnn)
-find_package(ncnn REQUIRED)
-
-add_library(ncnntotal SHARED ncnn.cpp nanodet.cpp yolov8.cpp nanodet_tstl.cpp)
-target_link_libraries(ncnntotal ncnn ${OpenCV_LIBS} mediandk jnigraphics)
-```
-
-### detection
-nanodet
-
-### segmentation
-yolov8-seg
+|       Master       |        Server        |
+|:------------------:|:--------------------:|
+| java > Sender.java | java > Receiver.java |
+| clientSocket port  |     PORT_NUMBER      |
 
 ### reference
+
 https://github.com/RangiLyu/nanodet  
 https://github.com/ultralytics/ultralytics  
 https://github.com/nihui/ncnn-android-nanodet  

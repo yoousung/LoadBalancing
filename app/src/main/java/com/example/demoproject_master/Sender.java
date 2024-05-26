@@ -23,6 +23,7 @@ public class Sender implements Runnable {
              Socket clientSocket2 = new Socket(iplist.get(1), 1301)) {
             // 192.168.43.32 samsung s22
             // 192.168.43.77 samsung s8+
+            // 192.168.43.103 samsung s7+
 
             BufferedOutputStream outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
             BufferedOutputStream outToServer2 = new BufferedOutputStream(clientSocket2.getOutputStream());
